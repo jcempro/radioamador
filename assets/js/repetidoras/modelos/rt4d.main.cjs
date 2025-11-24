@@ -1,9 +1,13 @@
 const isNODE = typeof window === 'undefined';
+
+/**
+ * Common utilities module import
+ */
 const commom = isNODE
-	? require(`../../../../../@assets/js/common${
-			isNODE ? '.main' : ''
-	  }.cjs`)
-	: null;
+	? require('../../common.main.cjs')
+	: typeof window !== `undefined`
+	? window.commom
+	: globalThis.commom;
 
 // Template para campo CH Alias
 const CH_ALIAS_TEMPLATE = '{{$AD}}, {{$UF}}/{{$UF}}';

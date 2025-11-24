@@ -1,14 +1,14 @@
 {
 	"name": "jcem.pro.root",
 	"version": "1.0.0",
-	"description": "Automação de minificação HTML e utilitários do projeto jcem.pro.root",
-	"homepage": "https://github.com/jcempro/root#readme",
+	"description": "",
+	"homepage": "https://github.com/jcempro/radioamador",
 	"bugs": {
-		"url": "https://github.com/jcempro/root/issues"
+		"url": "https://github.com/jcempro/radioamador/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/jcempro/root.git"
+		"url": "https://github.com/jcempro/radioamador/root.git"
 	},
 	"license": "ISC",
 	"author": "Jean Carlo E. M.",

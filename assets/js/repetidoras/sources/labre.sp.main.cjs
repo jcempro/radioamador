@@ -4,6 +4,15 @@
  */
 const isNODE = typeof window === 'undefined';
 
+/**
+ * Common utilities module import
+ */
+const commom = isNODE
+	? require('../../common.main.cjs')
+	: typeof window !== `undefined`
+	? window.commom
+	: globalThis.commom;
+
 const fromURL = `https://www.labre-sp.org.br/diversos.php?xid=48`;
 
 /**

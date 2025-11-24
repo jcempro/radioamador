@@ -1,3 +1,12 @@
+/**
+ * Módulos utilitários cross-environment
+ */
+const commom = isNODE
+	? require('common.main.cjs')
+	: typeof window !== `undefined`
+	? window.commom
+	: globalThis.commom;
+
 const _ = (e) => document.querySelector(e);
 document.addEventListener('DOMContentLoaded', () => {
 	const CODIGO = `${window.location.search}`

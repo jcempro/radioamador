@@ -5,6 +5,15 @@
 const isNODE = typeof window === 'undefined';
 
 /**
+ * Common utilities module import
+ */
+const commom = isNODE
+	? require('../../common.main.cjs')
+	: typeof window !== `undefined`
+	? window.commom
+	: globalThis.commom;
+
+/**
  * Importa módulo de validação de cidades
  */
 const CIDADES = isNODE

@@ -38,7 +38,7 @@ const __CIDADES_REPO =
  * Common utilities module import
  */
 const commom = isNODE
-	? require('../../../../@assets/js/common.main.cjs')
+	? require('../common.main.cjs')
 	: typeof window !== `undefined`
 	? window.commom
 	: globalThis.commom;

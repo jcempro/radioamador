@@ -14,7 +14,7 @@ const path = isNODE ? require('path') : null;
  * Módulos utilitários cross-environment
  */
 const commom = isNODE
-	? require('../../../../@assets/js/common.main.cjs')
+	? require('../common.main.cjs')
 	: typeof window !== `undefined`
 	? window.commom
 	: globalThis.commom;
