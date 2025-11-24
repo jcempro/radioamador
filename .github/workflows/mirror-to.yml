@@ -21,7 +21,8 @@ jobs:
           printf "\n=="
           echo "path: '$PWD'"
           printf "\n=="
-          rm -f ./.github/workflows/mirror-to.yml
+          # Remove todos os workflows que não começam com _
+          find .github/workflows -name "*.yml" ! -name "_*.yml" -type f -delete
           rm -f ./CNAME
           rm -rf ./.git
 
@@ -41,16 +42,17 @@ jobs:
           echo "path: '$PWD'"
           printf "\n=="
           mkdir ../temp-mirror
-          # Copia tudo de A para temp-mirror, exceto workflow e CNAME
-          rsync -av --exclude='.git' --exclude='.github/workflows/mirror-to.yml' --exclude='CNAME' ./ ../temp-mirror/          
+          # Copia tudo de A para temp-mirror, exceto workflows (que não começam com _) e CNAME
+          rsync -av --exclude='.git' --exclude='.github/workflows/!(_*.yml)' --exclude='CNAME' ./ ../temp-mirror/          
           cd ../temp-mirror
           printf "\n=="
           echo "path: '$PWD'"
           printf "\n=="
           rm -rf ./.git
           rm -f ./CNAME
-          rm -f ./.github/workflows/mirror-to.yml
-          find . -type f \( -name 'CNAME' -o -name 'mirror-to.yml' -o -path './.git/*' \) -exec rm -f {} +
+          # Remove todos os workflows que não começam com _
+          find .github/workflows -name "*.yml" ! -name "_*.yml" -type f -delete 2>/dev/null || true
+          find . -type f \( -name 'CNAME' -o -path './.git/*' \) -exec rm -f {} +
 
       - name: Criando git commit temporário na pasta ../temp-mirror
         run: |
@@ -64,7 +66,8 @@ jobs:
           git commit -am "Mirror commit" || echo "No changes to commit"
           echo "listando"
           find . -name "CNAME" -print -quit | grep -q "CNAME" && echo "CNAME: Existe" || echo "CNAME: Não existe"
-          find . -name "mirror-to.yml" -print -quit | grep -q "mirror-to.yml" && echo "mirror-to.yml: Existe" || echo "mirror-to.yml: Não existe"
+          # Verifica se há algum workflow que não começa com _
+          find .github/workflows -name "*.yml" ! -name "_*.yml" -print -quit 2>/dev/null | grep -q ".yml" && echo "Workflows (não _): Existe" || echo "Workflows (não _): Não existe"
 
       - name: Push ao respositório B
         env:
