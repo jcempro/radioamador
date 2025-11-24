@@ -68,7 +68,7 @@ jobs:
 
       - name: Push ao respositório B
         env:
-          TARGET_REPO: abreai/root.github.io # antes era ide2lnk
+          TARGET_REPO: jcem-radio/root # antes era ide2lnk
           PAT: ${{ secrets.PAT_FOR_MIRROR }}
         run: |
           echo "Using PAT for push to ${TARGET_REPO}"
