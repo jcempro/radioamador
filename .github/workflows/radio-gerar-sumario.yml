@@ -3,7 +3,7 @@ name: Atualizar sumario.json
 on:
   push:
     paths:
-      - 'radio/db/*.json'
+      - 'db/*.json'
       - '.github/workflows/gerar-sumario.yml'
   workflow_dispatch:
 
@@ -39,7 +39,7 @@ jobs:
 
           # 1. Adiciona todos os arquivos que correspondem ao padrão
           # O comando 'find' verifica se há arquivos a adicionar, prevenindo o erro 'fatal: pathspec'
-          if find radio/db/sumario*.json -type f -print0 | xargs -0 git add; then
+          if find db/sumario*.json -type f -print0 | xargs -0 git add; then
               echo "Arquivos sumario*.json adicionados ao staging area."
           else
               echo "Nenhum arquivo sumario*.json encontrado para adicionar."

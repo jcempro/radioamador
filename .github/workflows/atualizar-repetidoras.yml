@@ -1,4 +1,4 @@
-name: Gerar e Publicar Repetidoras (Quinzenal e em Push no /radio/ e YML)
+name: Gerar e Publicar Repetidoras (Quinzenal e em Push no / e YML)
 
 on:
   schedule:
@@ -8,7 +8,7 @@ on:
   push:
     # Executa apenas se houver alterações em arquivos dentro destes caminhos
     paths:
-      - 'radio/**'
+      - '**'
       - '.github/workflows/atualizar-repetidoras.yml' # Ajuste o nome do arquivo se for diferente
   # Permite a execução manual do workflow
   workflow_dispatch:

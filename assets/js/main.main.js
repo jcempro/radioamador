@@ -1,15 +1,13 @@
 const _ = (e) => document.querySelector(e);
 document.addEventListener('DOMContentLoaded', () => {
 	const CODIGO = `${window.location.search}`
-		.split('radio/')
-		.pop()
 		.split(`?`)
 		.pop()
 		.replace(/[^a-z0-9\/]/i, '')
 		.trim()
 		.split(`/`);
 
-	const SUMARIO = `\n\n<br /><br /><p>Consulte o <a href="/radio/?sumario0">Sumário</a> para lista de rádios.</p>`;
+	const SUMARIO = `\n\n<br /><br /><p>Consulte o <a href="/?sumario0">Sumário</a> para lista de rádios.</p>`;
 	const CID = CODIGO[0].trim();
 	const LOAD = _('.lds');
 	const LST = _('.dl');
@@ -218,8 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 			row.addEventListener('click', (e) => {
 				try {
-					window.location =
-						'../radio/?' + o[0].replace(/[^a-z0-9]/i, ``);
+					window.location = '/?' + o[0].replace(/[^a-z0-9]/i, ``);
 				} catch (error) {}
 			});
 
