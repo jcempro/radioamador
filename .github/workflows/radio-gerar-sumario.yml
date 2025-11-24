@@ -1,0 +1,55 @@
+name: Atualizar sumario.json
+
+on:
+  push:
+    paths:
+      - 'radio/db/*.json'
+      - '.github/workflows/gerar-sumario.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write # Concede permissão de escrita para o GITHUB_TOKEN
+      # issues: write # Adicione outras permissões se necessário (opcional)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar dependências
+        run: npm ci || npm install
+
+      - name: Gerar sumario.json
+        run: npm run gerar-sumario
+
+      - name: Commit e push do sumario
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # 1. Adiciona todos os arquivos que correspondem ao padrão
+          # O comando 'find' verifica se há arquivos a adicionar, prevenindo o erro 'fatal: pathspec'
+          if find radio/db/sumario*.json -type f -print0 | xargs -0 git add; then
+              echo "Arquivos sumario*.json adicionados ao staging area."
+          else
+              echo "Nenhum arquivo sumario*.json encontrado para adicionar."
+          fi
+
+          # 2. Commit apenas se houver alterações no staging area
+          if git diff --staged --quiet; then
+            echo "Nenhuma alteração para commitar."
+          else
+            git commit -m "Atualiza sumario.json automaticamente"
+            git push
+            echo "Commit e push realizados com sucesso."
+          fi

@@ -1,0 +1,31 @@
+{
+	"id": [
+		"53500.077722/2025-44",
+		"https://sei.anatel.gov.br/sei/modulos/pesquisa/md_pesq_processo_exibir.php?92AHliMZAlcgWWxm2w2qy-GDVz335h7FYd_mrGCDn9UEi2XStDTUZKOJ_damneHH9mwnSMIjw0l3j23hD04TshVeEEqsYGmJNEugGLwOvuVmHnY4y1qPIpzFftIgDiSk"
+	],
+	"r": [
+		[
+			"14982/2025/ORCN/SOR",
+			"https://sei.anatel.gov.br/sei/modulos/pesquisa/md_pesq_documento_consulta_externa.php?8-74Kn1tDR89f1Q7RjX8EYU46IzCFD26Q9Xx5QNDbqY4Llc9gIBtBLJoM6kR8sQ2rVOSwFOxWW1f9s5JQNtjaOm9WBQE5QQUW45q-LRngDGTMD8oIGkJQU2PQKvxRJIV"
+		],
+		[
+			"PDF no drive",
+			"https://drive.google.com/file/d/1Lg6ceokOFKShfufL80M3BFTVEEeREgLw/view?usp=drive_link"
+		]
+	],
+	"dt": "24/10/2025",
+	"v": [14603412, "C8BF5411"],
+	"mc": "QUANSHENG",
+	"md": "UV-K6",
+	"sn": "",
+	"fccid": ["XBPUV-K5", "https://fcc.report/FCC-ID/XBPUV-K5"],
+	"dp": "17/09/2025",
+	"tp": "${imp}",
+	"cid": "00",
+	"items": [
+		[
+			"Assinador",
+			"Documento assinado eletronicamente por Marcos Vieira Baeta Neves, Gerente de Certificação e Numeração, em 22/10/2025, às 20:52, conforme horário oficial de Brasília, com fundamento no art. 23, inciso II, da Portaria no 912/2017 da Anatel."
+		]
+	]
+}

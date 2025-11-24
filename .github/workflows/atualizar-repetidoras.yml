@@ -1,0 +1,57 @@
+name: Gerar e Publicar Repetidoras (Quinzenal e em Push no /radio/ e YML)
+
+on:
+  schedule:
+    # Executa todo dia 1 e dia 15 do mês, à meia-noite UTC.
+    # Minuto | Hora | Dia do mês | Mês | Dia da semana
+    - cron: '0 0 1,15 * *'
+  push:
+    # Executa apenas se houver alterações em arquivos dentro destes caminhos
+    paths:
+      - 'radio/**'
+      - '.github/workflows/atualizar-repetidoras.yml' # Ajuste o nome do arquivo se for diferente
+  # Permite a execução manual do workflow
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar ambiente Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Executar script gerador (npm run repetidoras)
+        run: npm run repetidoras
+
+      - name: Configurar credenciais Git para commit
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+      - name: Comitar e fazer push das alterações (se houver)
+        run: |
+          git add .
+          git commit -m "chore(automated): Atualização de dados via CI/CD" || echo "Nenhuma alteração a ser comitada."
+          git push
+
+      # --- Passos para o GitHub Pages ---
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Fazer Deploy para o GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages

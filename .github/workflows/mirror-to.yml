@@ -1,0 +1,77 @@
+name: Mirror to Repo B
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Faz o checkout do repositório atual
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Remove arquivos exluídos dos espelho
+        run: |
+          printf "\n=="
+          echo "path: '$PWD'"
+          printf "\n=="
+          rm -f ./.github/workflows/mirror-to.yml
+          rm -f ./CNAME
+          rm -rf ./.git
+
+      - name: Configurar Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Limpar credenciais
+        run: |
+          git config --global --unset credential.helper || true
+          git config --system --unset credential.helper || true
+
+      - name: Criando pasta clone ../temp-mirror
+        run: |
+          printf "\n=="
+          echo "path: '$PWD'"
+          printf "\n=="
+          mkdir ../temp-mirror
+          # Copia tudo de A para temp-mirror, exceto workflow e CNAME
+          rsync -av --exclude='.git' --exclude='.github/workflows/mirror-to.yml' --exclude='CNAME' ./ ../temp-mirror/          
+          cd ../temp-mirror
+          printf "\n=="
+          echo "path: '$PWD'"
+          printf "\n=="
+          rm -rf ./.git
+          rm -f ./CNAME
+          rm -f ./.github/workflows/mirror-to.yml
+          find . -type f \( -name 'CNAME' -o -name 'mirror-to.yml' -o -path './.git/*' \) -exec rm -f {} +
+
+      - name: Criando git commit temporário na pasta ../temp-mirror
+        run: |
+          printf "\n=="
+          echo "path: '$PWD'"
+          printf "\n=="
+          find . -type d -name ".git" -print -quit | grep -q ".git" && echo ".git: Existe" || echo ".git: Não existe"
+          echo  " " 
+          git init          
+          git add -A
+          git commit -am "Mirror commit" || echo "No changes to commit"
+          echo "listando"
+          find . -name "CNAME" -print -quit | grep -q "CNAME" && echo "CNAME: Existe" || echo "CNAME: Não existe"
+          find . -name "mirror-to.yml" -print -quit | grep -q "mirror-to.yml" && echo "mirror-to.yml: Existe" || echo "mirror-to.yml: Não existe"
+
+      - name: Push ao respositório B
+        env:
+          TARGET_REPO: abreai/root.github.io # antes era ide2lnk
+          PAT: ${{ secrets.PAT_FOR_MIRROR }}
+        run: |
+          echo "Using PAT for push to ${TARGET_REPO}"
+          git remote add mirror https://${PAT}@github.com/${TARGET_REPO}.git
+          git branch --unset-upstream || true
+          git push mirror +HEAD:refs/heads/master --force

@@ -1,0 +1,17 @@
+{
+	"id": [
+		"53500.096655/2025-67",
+		"https://sei.anatel.gov.br/sei/modulos/pesquisa/md_pesq_processo_exibir.php?92AHliMZAlcgWWxm2w2qy-GDVz335h7FYd_mrGCDn9UEi2XStDTUZKOJ_damneHH9mwnSMIjw0l3j23hD04TsmKdNpAzW3KdUUt8SDuKw6bY-2wwmog_vVtP00EoPoRe"
+	],
+	"r": [],
+	"dt": "",
+	"v": [],
+	"mc": "Radtel",
+	"md": "RT-4D",
+	"sn": "9251DMR07164",
+	"fccid": ["2AZSA-RT4D", "https://fcc.report/FCC-ID/2AZSA-RT4D"],
+	"dp": "11/11/2025",
+	"tp": "${imp}",
+	"cid": "03",
+	"items": [["Rastreio", "NM967262705BR"]]
+}
