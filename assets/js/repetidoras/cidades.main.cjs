@@ -17,7 +17,7 @@ const path = isNODE ? require('path') : null;
  * Root directory path resolution
  * @type {string}
  */
-const ROOT = isNODE ? process.cwd().split('/radio/')[0] : '';
+const ROOT = isNODE ? process.cwd() : '/';
 
 /**
  * Local cities data file path
@@ -25,7 +25,7 @@ const ROOT = isNODE ? process.cwd().split('/radio/')[0] : '';
  */
 const __CIDADES_LOCAL = ((x) => {
 	return isNODE ? path.resolve(x) : x.replace(/\\/, `/`);
-})(`${ROOT}/radio/repetidoras/cidades/brasil.cidades.json`);
+})(`${ROOT}/DADOS/assets/brasil.cidades.json`);
 
 /**
  * Remote repository URL for Brazilian municipalities data

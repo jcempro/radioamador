@@ -1,5 +1,0 @@
-"CH","RX Freq","TX Freq","CH Mode","RX/TX Limit","TX Power","TOT","Scan Add","CH Alias","ID Type","CH ID","Dual Slot","Time Slot","Color Code","Promiscuous","TX Politely","TX Contacts","RX TG List","DMR Encryption","RX CTC DCS","TX CTC DCS","CTC DCS Type","Mute Code","Busy Lock","Demodulation","Tail Tone","Scrambler","Bandwidth","Offset"
-1,439.67500,434.67500,"Digital","RX+TX","High",60,"Add","A, ES/ES","Channel ID",724114,"Off",1,1,"Off","Allow TX","All Call","None","None","None","None","Normal",0,"Allow TX","FM","Off","Off","Wide",-5.00000
-2,145.31000,-454.69000,"Digital","RX+TX","High",60,"Add","D, ES/ES","Channel ID",724044,"On",1,1,"Off","Allow TX","All Call","None","None","None","None","Normal",0,"Allow TX","FM","Off","Off","Wide",-600.00000
-3,145.31000,144.71000,"Digital","RX+TX","High",60,"Add","D, ES/ES","Channel ID",724219,"On",1,1,"Off","Allow TX","All Call","None","None","None","None","Normal",0,"Allow TX","FM","Off","Off","Wide",-0.60000
-4,147.18000,-452.82000,"Digital","RX+TX","High",60,"Add","D, ES/ES","Channel ID",724010,"On",2,1,"Off","Allow TX","All Call","None","None","None","None","Normal",0,"Allow TX","FM","Off","Off","Wide",-600.00000

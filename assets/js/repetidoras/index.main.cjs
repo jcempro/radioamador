@@ -42,14 +42,20 @@ const csvMODELOS = isNODE
 /**
  * Diretório raiz do projeto (Node.js)
  */
-const ROOT = isNODE ? process.cwd().split('/radio/')[0] : '';
+const ROOT = isNODE ? process.cwd() : '';
 
 /**
  * Diretório de metadados (normalizado cross-platform)
  */
-const META = ((x) =>
+const DADOS = ((x) =>
+	isNODE ? path.resolve(x) : x.replace(/\\/, `/`))(`${ROOT}/DADOS`);
+
+/**
+ * Diretório de metadados (normalizado cross-platform)
+ */
+const RPT_PATH = ((x) =>
 	isNODE ? path.resolve(x) : x.replace(/\\/, `/`))(
-	`${ROOT}/radio/repetidoras/meta`,
+	`${DADOS}/repetidoras`,
 );
 
 /**
@@ -66,7 +72,7 @@ function resolverCaminhos(basePath, estadoSigla = '') {
 		: basePath;
 
 	const nomeBase = commom
-		.joinPath(META, basePath)
+		.joinPath(RPT_PATH, basePath)
 		.replace('.json', '');
 	return {
 		json: `${nomeBase}${point ? '' : '.'}${estadoSigla}.json`,
@@ -313,7 +319,7 @@ if (!isNODE) {
 			);
 		},
 		(error, resultados) => {
-			salvarDados(resultados.contents, `${META}/radioidnet.csv`);
+			salvarDados(resultados.contents, `${RPT_PATH}/radioidnet.csv`);
 		},
 	);
 }

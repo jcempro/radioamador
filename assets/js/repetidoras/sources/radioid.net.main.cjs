@@ -14,15 +14,6 @@ const commom = isNODE
 	: globalThis.commom;
 
 /**
- * Importa módulo de validação de cidades
- */
-const CIDADES = isNODE
-	? require('../cidades.main.cjs')
-	: typeof window !== 'undefined'
-	? window.cidades
-	: globalThis.cidades;
-
-/**
  * Importa módulo de utilidades para radios
  */
 const radioUTILs = isNODE

@@ -49,7 +49,6 @@ a:hover::after {
 	text-align: left;
 	opacity: 0;
 	transition: opacity 0.5s ease-in-out;
-	border: 1px solid var(--gray);
 	padding: 0;
 }
 .dl > .tbl {

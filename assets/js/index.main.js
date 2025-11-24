@@ -1,4 +1,13 @@
 /**
+ * Environment detection for Node.js runtime
+ * @type {boolean}
+ */
+const isNODE =
+	typeof process !== 'undefined' &&
+	typeof process.versions === 'object' &&
+	!!process.versions.node;
+
+/**
  * Módulos utilitários cross-environment
  */
 const commom = isNODE
@@ -258,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	if (CODIGO) {
 		const fURL =
-			`db/${CID}.json?t=` +
+			`DADOS/homologacoes/${CID}.json?t=` +
 			Math.random().toString(36).substring(2, 18);
 
 		fetch(fURL)
