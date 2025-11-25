@@ -15,7 +15,8 @@ let https = null;
 let path = null;
 let ROOT = '/';
 
-const catchDownload = {};
+const COUNT_ERROR_DOWNLOAD = {};
+const CACHED_DOWNLOAD = {};
 
 if (isNODE) {
 	fs = require('fs');
@@ -175,14 +176,18 @@ async function _GET(url) {
 	 */
 	const tryPaths = async (paths) => {
 		for (const p of paths) {
-			if (!catchDownload.hasOwnProperty(p) || catchDownload[p] < 2) {
+			if (
+				!COUNT_ERROR_DOWNLOAD.hasOwnProperty(p) ||
+				COUNT_ERROR_DOWNLOAD[p] < 2
+			) {
 				try {
 					const rr = await downloadResource(p);
 					if (V_RETURN(rr)) return rr;
 				} catch (e) {
-					catchDownload[p] =
-						(catchDownload.hasOwnProperty(p) ? catchDownload[p] : 0) +
-						1;
+					COUNT_ERROR_DOWNLOAD[p] =
+						(COUNT_ERROR_DOWNLOAD.hasOwnProperty(p)
+							? COUNT_ERROR_DOWNLOAD[p]
+							: 0) + 1;
 					console.warn(`\n\n=== Erro commom.main: ===\n`, e, `\n\n`);
 				}
 			}
@@ -253,19 +258,22 @@ async function downloadResource(link) {
 		return r.json();
 	};
 
-	// Maintain EXACT selection logic from original _GET
-	try {
-		if (isNODE && !isProtocol) {
-			return loadLocal(link);
-		} else if (!hasFETCH && isProtocol) {
-			return await loadViaHTTPS(link);
-		} else if (hasFETCH) {
-			return await loadViaFetch(link);
+	if (!CACHED_DOWNLOAD.hasOwnProperty(link)) {
+		try {
+			CACHED_DOWNLOAD[link] =
+				isNODE && !isProtocol
+					? loadLocal(link)
+					: !hasFETCH && isProtocol
+					? await loadViaHTTPS(link)
+					: hasFETCH
+					? await loadViaFetch(link)
+					: [[[-106]]];
+		} catch (err) {
+			throw err;
 		}
-		return [[[-106]]];
-	} catch (err) {
-		throw err;
 	}
+
+	return CACHED_DOWNLOAD[link];
 }
 
 /**
