@@ -9,6 +9,8 @@ const isNODE =
 
 /**
  * Módulos utilitários cross-environment
+ * - Em Node importa o módulo local 'common.main.cjs'
+ * - Em browser utiliza globalThis/window.commom
  */
 const commom = isNODE
 	? require('common.main.cjs')
@@ -16,7 +18,20 @@ const commom = isNODE
 	? window.commom
 	: globalThis.commom;
 
+/**
+ * Helper rápido para querySelector (DOM)
+ * @param {string} e - seletor
+ * @returns {Element|null}
+ */
 const _ = (e) => document.querySelector(e);
+
+/**
+ * Inicialização após carregamento do DOM.
+ * Responsável por:
+ * - ler parâmetro da URL
+ * - controlar UI (carregando/listagem)
+ * - buscar arquivo JSON local e renderizar dados ou redirecionar
+ */
 document.addEventListener('DOMContentLoaded', () => {
 	const CODIGO = `${window.location.search}`
 		.split(`?`)
@@ -25,11 +40,22 @@ document.addEventListener('DOMContentLoaded', () => {
 		.trim()
 		.split(`/`);
 
+	// Texto auxiliar exibido quando aplicável (link para sumário)
 	const SUMARIO = `\n\n<br /><br /><p>Consulte o <a href="/?sumario0">Sumário</a> para lista de rádios.</p>`;
+
+	// ID principal a partir da URL (primeira parte)
 	const CID = CODIGO[0].trim();
+
+	// Referências para elementos de UI
 	const LOAD = _('.lds');
 	const LST = _('.dl');
 
+	/**
+	 * Mensagens de erro padronizadas
+	 * MSG1: arquivo existe mas formato inválido
+	 * MSG2: parâmetro inexistente/inválido (mostra SUMARIO)
+	 * MSG3: sumário mal formatado
+	 */
 	const MSG1 = (id) => [
 		id,
 		`Dados de registro incorretos`,
@@ -48,22 +74,46 @@ document.addEventListener('DOMContentLoaded', () => {
 		`O sumário existe, mas possui uma formatação incompatível para exibição.`,
 	];
 
+	/**
+	 * Capitaliza a string (Primeira letra maiúscula, resto minúsculas)
+	 * @param {string} x
+	 * @returns {string}
+	 */
 	const CST = (x) =>
 		x.charAt(0).toUpperCase() + x.slice(1).toLowerCase() || '';
 
+	/**
+	 * TAG: lê/atribui innerHTML de um elemento e retorna trimmed
+	 * @param {Element} o - elemento
+	 * @param {string|number} [x=0] - conteúdo para setar (opcional)
+	 * @returns {string}
+	 */
 	const TAG = (o, x = 0) => {
 		if (x) o.innerHTML = x;
 		return o.innerHTML.trim();
 	};
 
 	const DESC = _('.desc');
+
+	/**
+	 * Remove tags HTML de uma string
+	 * @param {string} s
+	 * @returns {string}
+	 */
 	const PURE_TXT = (s) => s.replace(/(<([^>]+)>)/gi, '');
 
+	/**
+	 * Define título visível e título da página
+	 * @param {string} t
+	 */
 	const TITULO = (t) => {
 		TAG(_('#ttl'), t);
 		document.title = PURE_TXT(t);
 	};
 
+	/**
+	 * Exibe container principal quando dados carregados
+	 */
 	const LOADED = () => {
 		_('.container').style.display = 'block';
 		window.setTimeout(() => {
@@ -72,9 +122,22 @@ document.addEventListener('DOMContentLoaded', () => {
 		}, 50);
 	};
 
+	/**
+	 * Encloses plain text in a tag unless it already starts with an HTML tag
+	 * @param {string} v - conteúdo
+	 * @param {string} [tag='span'] - tag a envolver
+	 * @returns {string}
+	 */
 	const EnclouseTag = (v, tag = `span`) =>
 		/^\s*<[\w]+/i.test(v) ? v : `<${tag}>${v}</${tag}>`;
 
+	/**
+	 * Gera e exibe erro na UI; opcionalmente lança exceção para interromper fluxo.
+	 * @param {string} id
+	 * @param {string} title
+	 * @param {string} descri
+	 * @param {boolean|number} exit - se true lança Error
+	 */
 	const ERR = (id, title, descri, exit) => {
 		const txt = `\n\n${descri}`;
 		const m = `⚠️ ${title}${ERR_ID(id)}`;
@@ -89,14 +152,28 @@ document.addEventListener('DOMContentLoaded', () => {
 			throw new Error(PURE_TXT(`${title}${txt}`));
 	};
 
+	/**
+	 * Formata id de erro para exibição (superscript)
+	 * @param {string} id
+	 * @returns {string}
+	 */
 	const ERR_ID = (id) =>
 		id ? `<sup>${`${id}`.toUpperCase()}</sup>` : '';
 
+	// Utilitários curtos
 	const IS_STRING = (x) => typeof x === `string`;
 	const KEYSofOBJ = (x) => Object.keys(x);
 	const HAS_KEY = (o, y) => Object.hasOwn(o, y);
 	const IS_ARR = (x) => Array.isArray(x);
 
+	/**
+	 * Cria elemento DOM e insere conteúdo
+	 * @param {Element|false} t - elemento pai (ou 0)
+	 * @param {string} x - tag a criar
+	 * @param {string} [c] - className
+	 * @param {string} [ct] - conteúdo innerHTML
+	 * @returns {Element}
+	 */
 	const CREATE_EL = (t, x, c = ``, ct = ``) => {
 		const r = document.createElement(x);
 		r.className = c;
@@ -105,13 +182,30 @@ document.addEventListener('DOMContentLoaded', () => {
 		return r;
 	};
 
+	// Validação inicial do CID (somente alfanum / slash)
 	if (/([^a-z0-9])/i.test(CID)) return ERR(...MSG2('1T'));
 
+	// Código secundário (destino) extraído da URL, se presente
 	const CED =
 		CODIGO.length >= 2 ? `${CODIGO[1]}`.trim().toLowerCase() : 0;
 
+	/**
+	 * Detecta se string é URL (http/https/ftp)
+	 * @param {string} v
+	 * @returns {boolean}
+	 */
 	const isL = (v) => /^\s?(http|ftp)s?:\/\//.test(v);
 
+	/**
+	 * MAKE_LINK: monta links a partir de várias formas de entrada:
+	 * - se parametro ol=1 e y é string URL retorna URL limpa
+	 * - se y é array de [texto, url] ou [url, texto] monta <a>
+	 * - se y é array de arrays monta lista <ul><li>...</li></ul>
+	 * - preserva entradas já em URL quando solicitado (ol)
+	 * @param {any} y
+	 * @param {number} [ol=0] - flag: retornar URL cru (1) ou HTML (0)
+	 * @returns {string|array|0}
+	 */
 	const MAKE_LINK = (y, ol = 0) => {
 		if (ol && IS_STRING(y) && isL(y)) return y.trim();
 		if (!IS_ARR(y)) return ol ? 0 : y;
@@ -134,6 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
 					'</ul>';
 	};
 
+	// Mapeamento de propriedades esperadas no JSON de homologação
 	const PROPS1 = {
 		id: 'Peticionamento ou Processo',
 		tp: 'Tipo de processo',
@@ -150,16 +245,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	const PROPS2 = {};
 	const PROPS = { ...PROPS1, ...PROPS2 };
+
+	/**
+	 * Mensagem explicativa dos destinos válidos (PROPS)
+	 * Gerada dinamicamente a partir de PROPS
+	 */
 	const PROPS_MSG =
 		"\n\n<p>Apenas os destinos abaixo podem ser usados, <b>mas</b> note que a maioria não conterá URL:</p><ul class='pr'>" +
 		Object.entries(PROPS)
 			.map(([chave, valor]) => `<li><b>${chave}:</b> ${valor}</li>`)
 			.join('') +
 		`</ul>${SUMARIO}`;
+
+	// Substituições estáticas para RP (placeholder resolution)
 	const _S = {
 		imp: 'Certificação de Produto: Declaração de Conformidade - Importado uso próprio',
 	};
 
+	/**
+	 * Formata texto de homologação (aceita string ou [codigo,crc])
+	 * @param {string|Array} x
+	 * @returns {string}
+	 */
 	const HOMOLOGACA_TEXT = (x) => {
 		if (IS_STRING(x) && x.trim().length > 0) return x;
 		if (IS_ARR(x) && x.length === 2) {
@@ -168,6 +275,11 @@ document.addEventListener('DOMContentLoaded', () => {
 		return '';
 	};
 
+	/**
+	 * RP: substitui placeholders do tipo ${key} usando o mapa _S
+	 * @param {string} str
+	 * @returns {string}
+	 */
 	const RP = (str) => {
 		return `${str}`.replace(/\$\{([\w\d]+)\}/g, (_, k) => {
 			const i = k.trim().toLowerCase();
@@ -176,10 +288,23 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	};
 
+	/**
+	 * Formata valor para exibição:
+	 * - se campo 'v' aplica HOMOLOGACA_TEXT antes de MAKE_LINK
+	 * - caso contrário aplica MAKE_LINK
+	 * @param {any} x
+	 * @param {string|undefined} k
+	 * @returns {string}
+	 */
 	const PRE_FORMAT = (x, k = undefined) => {
 		return RP(k === 'v' ? HOMOLOGACA_TEXT(x) : MAKE_LINK(x));
 	};
 
+	/**
+	 * Adiciona uma linha à lista (sidebar)
+	 * - k: chave / legenda
+	 * - v: valor (string/HTML)
+	 */
 	const ADD = (k, v) => {
 		const row = CREATE_EL(0, 'div', 'dl-row');
 		CREATE_EL(row, 'div', 'dt', k === null ? `--` : EnclouseTag(k));
@@ -196,8 +321,14 @@ document.addEventListener('DOMContentLoaded', () => {
 		LST.appendChild(row);
 	};
 
+	// Colunas do sumário exibido em tabela
 	const SUM_COLS = ['Peticionamento', 'Marca / Modelo', `ID`];
 
+	/**
+	 * Renderiza sumário (array de arrays)
+	 * - valida estrutura e gera tabela interativa
+	 * @param {Array} d
+	 */
 	const LST_H = (d) => {
 		if (!Array.isArray(d)) {
 			return ERR(...MSG3('S1'));
@@ -265,6 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		LOADED();
 	};
 
+	// Se CID presente, monta caminho do arquivo de dados e tenta carregar
 	if (CODIGO) {
 		const fURL =
 			`DADOS/homologacoes/${CID}.json?t=` +
@@ -276,14 +408,20 @@ document.addEventListener('DOMContentLoaded', () => {
 				return response.json();
 			})
 			.then((data) => {
+				// Sumário (páginas) tem formato especial
 				if (/sumario[\d]+/i.test(CID.toLowerCase())) {
 					return LST_H(data);
 				}
+
+				// Validação básica de campos obrigatórios
 				for (const i of KEYSofOBJ(PROPS1))
 					if (!HAS_KEY(data, i)) return ERR(...MSG1(`:${i}`));
 
+				// items deve ser array
 				if (!HAS_KEY(data, 'items') || !IS_ARR(data.items))
 					return ERR(...MSG1('ITM1'));
+
+				// Se foi passado destino (CED), valida e redireciona se for URL
 				if (CODIGO.length >= 2) {
 					if (!HAS_KEY(PROPS, CED)) {
 						return ERR(
@@ -323,6 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
 								1,
 						  );
 				} else {
+					// Exibição detalhada do registro
 					TITULO(`<small>${CST(data.mc)}</small> ${data.md}`);
 
 					for (const j of [

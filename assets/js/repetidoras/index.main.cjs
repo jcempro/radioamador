@@ -303,23 +303,33 @@ if (!isNODE) {
 	}
 } else {
 	// Node.js: processa Radio ID e salva JSON + CSV
-	radioidnet.processarJSON(
-		resolverCaminhos,
-		carregarDados,
-		(registros, caminhos, estadoSigla, formato) => {
-			salvarDados(registros, caminhos, estadoSigla, formato);
-			salvarDados(
-				csvMODELOS.rt4d.converterParaModelo(
-					registros,
-					csvMODELOS.rt4d.MODEL,
-				),
-				caminhos,
-				estadoSigla,
-				'csv',
-			);
-		},
-		(error, resultados) => {
-			salvarDados(resultados.contents, `${RPT_PATH}/radioidnet.csv`);
-		},
-	);
+	(async () => {
+		await radioidnet.processarJSON(
+			resolverCaminhos,
+			carregarDados,
+			(registros, caminhos, estadoSigla, formato) => {
+				salvarDados(registros, caminhos, estadoSigla, formato);
+				salvarDados(
+					csvMODELOS.rt4d.converterParaModelo(
+						registros,
+						csvMODELOS.rt4d.MODEL,
+					),
+					caminhos,
+					estadoSigla,
+					'csv',
+				);
+			},
+			(error, resultados) => {
+				if (!resultados)
+					throw new Error(
+						`\n[ERROR] resultados é inválido ou vazio.\n`,
+					);
+
+				salvarDados(
+					resultados.contents,
+					`${RPT_PATH}/radioidnet.csv`,
+				);
+			},
+		);
+	})();
 }

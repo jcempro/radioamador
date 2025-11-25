@@ -15,6 +15,8 @@ let https = null;
 let path = null;
 let ROOT = '/';
 
+const catchDownload = {};
+
 if (isNODE) {
 	fs = require('fs');
 	https = require('https');
@@ -141,40 +143,19 @@ async function getItemLocalStorage(key, defValue = undefined) {
 
 /**
  * Universal data fetcher with multiple fallback strategies
- * @param {string} url - URL or file path to load
- * @returns {Promise<*>} Retrieved data
  */
 async function _GET(url) {
 	const isProtocol = REGEX_PROTOCOL.test(url);
 	const is_relative = !isProtocol && REGEX_LOCAL.test(url);
 	const hasFETCH = typeof fetch === 'function';
 
-	/**
-	 * Removes duplicates and normalizes paths
-	 * @param {Array} arr - Array of paths
-	 * @returns {Array} Unique normalized paths
-	 */
 	const uniq = (arr) => [...new Set(arr.map(String))];
-
-	/**
-	 * Normalizes path separators
-	 * @param {string} p - Path to normalize
-	 * @returns {string} Normalized path
-	 */
 	const normalize = (p) =>
 		p.replace(/\/\/+/g, '/').replace(/\\+/g, '/');
 
-	/**
-	 * Builds fallback paths for relative URLs
-	 * @param {string} u - Original URL/path
-	 * @returns {Array} Array of fallback paths
-	 */
 	const buildFallbacks = (u) => {
 		const list = [u];
-
-		if (is_relative) {
-			list.push('./' + u, '../' + u, '../../' + u);
-		}
+		if (is_relative) list.push('./' + u, '../' + u, '../../' + u);
 
 		if (isNODE) {
 			list.push(path.join(ROOT, u));
@@ -186,15 +167,55 @@ async function _GET(url) {
 				);
 			}
 		}
-
 		return uniq(list.map(normalize));
 	};
 
 	/**
-	 * Loads data from local file system (Node.js only)
-	 * @param {string} file - File path
-	 * @returns {Array} Parsed data or error code
+	 * Attempts multiple paths until one succeeds
 	 */
+	const tryPaths = async (paths) => {
+		for (const p of paths) {
+			if (!catchDownload.hasOwnProperty(p) || catchDownload[p] < 2) {
+				try {
+					const rr = await downloadResource(p);
+					if (V_RETURN(rr)) return rr;
+				} catch (e) {
+					catchDownload[p] =
+						(catchDownload.hasOwnProperty(p) ? catchDownload[p] : 0) +
+						1;
+					console.warn(`\n\n=== Erro commom.main: ===\n`, e, `\n\n`);
+				}
+			}
+		}
+		return [[[-102]]];
+	};
+
+	const result = await tryPaths(buildFallbacks(url));
+	return V_RETURN(result) ? result : undefined;
+}
+
+/**
+ * Source - https://stackoverflow.com/a
+ * Posted by Murph
+ * Retrieved 2025-11-24, License - CC BY-SA 3.0
+ */
+function sleep(ms) {
+	var start = new Date().getTime(),
+		expire = start + ms;
+	while (new Date().getTime() < expire) {}
+	return;
+}
+
+/**
+ * Generic downloader for any resource (JSON expected),
+ * unifying local, fetch, and HTTPS strategies.
+ * Keeps EXACT logic and error codes used in _GET.
+ */
+async function downloadResource(link) {
+	const isProtocol = REGEX_PROTOCOL.test(link);
+	const hasFETCH = typeof fetch === 'function';
+
+	// Local file (Node.js only)
 	const loadLocal = (file) => {
 		try {
 			if (isNODE && fs.existsSync(file)) {
@@ -206,15 +227,11 @@ async function _GET(url) {
 		return [[[-103]]];
 	};
 
-	/**
-	 * Loads data via HTTPS (Node.js fallback for fetch)
-	 * @param {string} link - URL to load
-	 * @returns {Promise<Array>} Parsed data
-	 */
-	const loadViaHTTPS = (link) =>
+	// HTTPS loader (Node.js)
+	const loadViaHTTPS = (url) =>
 		new Promise((resolve, reject) => {
 			https
-				.get(link, (resp) => {
+				.get(url, (resp) => {
 					let data = '';
 					resp.on('data', (c) => (data += c));
 					resp.on('end', () => {
@@ -228,47 +245,27 @@ async function _GET(url) {
 				.on('error', reject);
 		});
 
-	/**
-	 * Loads data via Fetch API
-	 * @param {string} link - URL to load
-	 * @returns {Promise<Array>} Parsed data or error code
-	 */
-	const loadViaFetch = async (link) => {
+	// Fetch loader (browser or Node with fetch)
+	const loadViaFetch = async (url) => {
 		if (isNODE && !isProtocol) return [[[-107]]];
-		const r = await fetch(link);
+		const r = await fetch(url);
 		if (!r.ok) return [[[-104]]];
 		return r.json();
 	};
 
-	/**
-	 * Attempts to load data from multiple paths with fallback
-	 * @param {Array} paths - Array of paths to try
-	 * @returns {Promise<Array>} Retrieved data or error code
-	 */
-	const tryPaths = async (paths) => {
-		for (const p of paths) {
-			try {
-				let rr =
-					isNODE && !isProtocol
-						? loadLocal(p)
-						: !hasFETCH && isProtocol
-						? await loadViaHTTPS(p)
-						: hasFETCH
-						? await loadViaFetch(p)
-						: [[[-106]]];
-
-				if (V_RETURN(rr)) return rr;
-			} catch (e) {
-				console.warn(
-					'Erro coomom.main =====================================',
-				);
-			}
+	// Maintain EXACT selection logic from original _GET
+	try {
+		if (isNODE && !isProtocol) {
+			return loadLocal(link);
+		} else if (!hasFETCH && isProtocol) {
+			return await loadViaHTTPS(link);
+		} else if (hasFETCH) {
+			return await loadViaFetch(link);
 		}
-		return [[[-102]]];
-	};
-
-	const result = await tryPaths(buildFallbacks(url));
-	return V_RETURN(result) ? result : undefined;
+		return [[[-106]]];
+	} catch (err) {
+		throw err;
+	}
 }
 
 /**
@@ -311,6 +308,8 @@ module.exports = {
 	isFile,
 	joinPath,
 	capitalizar,
+	sleep,
+	downloadResource,
 };
 
 /**
@@ -329,6 +328,8 @@ if (typeof globalThis !== 'undefined') {
 		_ASPAS: _ASPAS,
 		isFile: isFile,
 		capitalizar: capitalizar,
+		sleep: sleep,
+		downloadResource: downloadResource,
 	};
 
 	if (typeof window !== 'undefined') {
