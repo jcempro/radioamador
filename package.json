@@ -18,7 +18,7 @@
 		"watch": "npm-watch",
 		"dev": "npm run minify && npm run watch",
 		"repetidoras": "node ./assets/js/repetidoras/index.main.cjs",
-		"gerar-sumario": "node ./.gerar_sumario.js"
+		"gerar-sumario": "node ./assets/js/gerar_sumario.js"
 	},
 	"watch": {
 		"minify": {
@@ -33,6 +33,7 @@
 	"devDependencies": {
 		"clean-css": "^5.3.3",
 		"html-minifier-terser": "^7.2.0",
+		"jsdom": "^27.2.0",
 		"npm-watch": "^0.13.0",
 		"terser": "^5.44.1"
 	},
