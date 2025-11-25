@@ -147,8 +147,8 @@ async function getItemLocalStorage(key, defValue = undefined) {
  */
 async function _GET(url) {
 	const isProtocol = REGEX_PROTOCOL.test(url);
-	const is_relative = !isProtocol && REGEX_LOCAL.test(url);
 	const hasFETCH = typeof fetch === 'function';
+	const is_relative = !isProtocol && REGEX_LOCAL.test(url);
 
 	const uniq = (arr) => [...new Set(arr.map(String))];
 	const normalize = (p) =>
@@ -169,6 +169,63 @@ async function _GET(url) {
 			}
 		}
 		return uniq(list.map(normalize));
+	};
+
+	// Local file (Node.js only)
+	const loadLocal = (file) => {
+		try {
+			if (isNODE && fs.existsSync(file)) {
+				return JSON.parse(fs.readFileSync(file, 'utf8'));
+			}
+		} catch (e) {
+			return [[[-105]]];
+		}
+		return [[[-103]]];
+	};
+
+	// HTTPS loader (Node.js)
+	const loadViaHTTPS = (url) =>
+		new Promise((resolve, reject) => {
+			https
+				.get(url, (resp) => {
+					let data = '';
+					resp.on('data', (c) => (data += c));
+					resp.on('end', () => {
+						try {
+							resolve(JSON.parse(data));
+						} catch (err) {
+							reject(err);
+						}
+					});
+				})
+				.on('error', reject);
+		});
+
+	// Fetch loader (browser or Node with fetch)
+	const loadViaFetch = async (url) => {
+		if (isNODE && !isProtocol) return [[[-107]]];
+		const r = await fetch(url);
+		if (!r.ok) return [[[-104]]];
+		return r.json();
+	};
+
+	const downloadResource = async (link) => {
+		if (!CACHED_DOWNLOAD.hasOwnProperty(link)) {
+			try {
+				CACHED_DOWNLOAD[link] =
+					isNODE && !isProtocol
+						? loadLocal(link)
+						: !hasFETCH && isProtocol
+						? await loadViaHTTPS(link)
+						: hasFETCH
+						? await loadViaFetch(link)
+						: [[[-106]]];
+			} catch (err) {
+				throw err;
+			}
+		}
+
+		return CACHED_DOWNLOAD[link];
 	};
 
 	/**
@@ -212,71 +269,6 @@ function sleep(ms) {
 }
 
 /**
- * Generic downloader for any resource (JSON expected),
- * unifying local, fetch, and HTTPS strategies.
- * Keeps EXACT logic and error codes used in _GET.
- */
-async function downloadResource(link) {
-	const isProtocol = REGEX_PROTOCOL.test(link);
-	const hasFETCH = typeof fetch === 'function';
-
-	// Local file (Node.js only)
-	const loadLocal = (file) => {
-		try {
-			if (isNODE && fs.existsSync(file)) {
-				return JSON.parse(fs.readFileSync(file, 'utf8'));
-			}
-		} catch (e) {
-			return [[[-105]]];
-		}
-		return [[[-103]]];
-	};
-
-	// HTTPS loader (Node.js)
-	const loadViaHTTPS = (url) =>
-		new Promise((resolve, reject) => {
-			https
-				.get(url, (resp) => {
-					let data = '';
-					resp.on('data', (c) => (data += c));
-					resp.on('end', () => {
-						try {
-							resolve(JSON.parse(data));
-						} catch (err) {
-							reject(err);
-						}
-					});
-				})
-				.on('error', reject);
-		});
-
-	// Fetch loader (browser or Node with fetch)
-	const loadViaFetch = async (url) => {
-		if (isNODE && !isProtocol) return [[[-107]]];
-		const r = await fetch(url);
-		if (!r.ok) return [[[-104]]];
-		return r.json();
-	};
-
-	if (!CACHED_DOWNLOAD.hasOwnProperty(link)) {
-		try {
-			CACHED_DOWNLOAD[link] =
-				isNODE && !isProtocol
-					? loadLocal(link)
-					: !hasFETCH && isProtocol
-					? await loadViaHTTPS(link)
-					: hasFETCH
-					? await loadViaFetch(link)
-					: [[[-106]]];
-		} catch (err) {
-			throw err;
-		}
-	}
-
-	return CACHED_DOWNLOAD[link];
-}
-
-/**
  * Checks if path represents a file
  * @param {string} path - Path to check
  * @returns {boolean} True if path represents a file
@@ -317,7 +309,6 @@ module.exports = {
 	joinPath,
 	capitalizar,
 	sleep,
-	downloadResource,
 };
 
 /**
@@ -337,7 +328,6 @@ if (typeof globalThis !== 'undefined') {
 		isFile: isFile,
 		capitalizar: capitalizar,
 		sleep: sleep,
-		downloadResource: downloadResource,
 	};
 
 	if (typeof window !== 'undefined') {
