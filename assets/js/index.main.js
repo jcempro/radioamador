@@ -25,6 +25,156 @@ const commom = isNODE
  */
 const _ = (e) => document.querySelector(e);
 
+// Cache GLOBAL obrigatório
+const __fetchCache__ = new Map();
+
+const cachedFetch = async (url, options = {}, asJson = true) => {
+	const urls = Array.isArray(url) ? url : [url];
+
+	const {
+		retries = 1, // tenta a mesma URL só mais uma vez
+		timeout = 10000,
+	} = options;
+
+	// ---------------------------------------------------
+	// Sub-função aninhada (pedido seu)
+	// ---------------------------------------------------
+	const isTemporaryError = (status) => {
+		if (!status) return true; // erros de rede
+		if (status === 404) return false; // definitivo
+		if (status >= 500) return true; // 5xx → temporário
+		if (status === 429) return true; // rate limit
+		return false;
+	};
+
+	const withTimeout = (promise) =>
+		Promise.race([
+			promise,
+			new Promise((_, reject) =>
+				setTimeout(() => reject(new Error('Timeout')), timeout),
+			),
+		]);
+
+	let lastURL = undefined;
+	let lastError = null;
+
+	for (let index = 0; index < urls.length; index++) {
+		let current = urls[index];
+
+		// ---------------------------------------------------
+		// Função → só passa última URL SE não é a primeira
+		// ---------------------------------------------------
+		if (typeof current === 'function') {
+			urls[index] = current = await current(lastURL);
+
+			if (current === null) {
+				throw new Error(
+					'URL function returned null — end of URL options',
+				);
+			}
+		}
+
+		lastURL = current;
+
+		const cacheKey = `${current}-${JSON.stringify(
+			options,
+		)}-${asJson}`;
+
+		// ---------------------------------------------------
+		// CACHE RESTAURADO 100%
+		// ---------------------------------------------------
+		if (__fetchCache__.has(cacheKey)) {
+			return __fetchCache__.get(cacheKey);
+		}
+
+		try {
+			// ---------------------------------------------------
+			// RETRY da MESMA URL (máx 1 extra)
+			// ---------------------------------------------------
+			for (let attempt = 0; attempt <= retries; attempt++) {
+				try {
+					const resp = await withTimeout(fetch(current, options));
+
+					if (resp.ok) {
+						const data = asJson
+							? await resp.json()
+							: asJson === false
+							? resp // retorna Response cru
+							: await resp.text();
+
+						__fetchCache__.set(cacheKey, data);
+						return data;
+					}
+
+					const temp = isTemporaryError(resp.status);
+
+					if (!temp) {
+						// Erro definitivo → não retry
+						throw new Error(
+							`HTTP ${resp.status}: ${resp.statusText}`,
+						);
+					}
+
+					// Temporário → retry permitido
+					if (attempt < retries) {
+						continue;
+					}
+
+					throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+				} catch (err) {
+					lastError = err;
+
+					if (attempt < retries) {
+						continue; // tenta de novo
+					}
+
+					throw err;
+				}
+			}
+		} catch (err) {
+			lastError = err;
+
+			const next = urls[index + 1];
+			if (next) {
+				const nextIsFn = typeof next === 'function';
+				console.log(
+					`🔄 Tentando fallback (${nextIsFn ? 'função' : 'URL'})...`,
+				);
+			}
+			continue;
+		}
+	}
+
+	throw new Error(
+		`Todas as URLs falharam. Último erro: ${
+			lastError?.message
+		}\n\n${JSON.stringify(urls, null, 2)}\n^^^^^^^^^\n`,
+	);
+};
+
+// Métodos utilitários preservados
+cachedFetch.clearCache = () => __fetchCache__.clear();
+cachedFetch.delete = (url, options = {}, asJson = true) => {
+	const urls = Array.isArray(url) ? url : [url];
+	let deleted = 0;
+
+	urls.forEach((u) => {
+		if (typeof u === 'string') {
+			const key = `${u}-${JSON.stringify(options)}-${asJson}`;
+			if (__fetchCache__.delete(key)) deleted++;
+		}
+	});
+
+	return deleted;
+};
+
+cachedFetch.getCacheSize = () => __fetchCache__.size;
+cachedFetch.getCacheKeys = () => Array.from(__fetchCache__.keys());
+
+const getAllSumario = async () => {
+	return await cachedFetch(`/DADOS/homologacoes/sumario_all.json`);
+};
+
 /**
  * Inicialização após carregamento do DOM.
  * Responsável por:
@@ -33,18 +183,42 @@ const _ = (e) => document.querySelector(e);
  * - buscar arquivo JSON local e renderizar dados ou redirecionar
  */
 document.addEventListener('DOMContentLoaded', () => {
-	const CODIGO = `${window.location.search}`
-		.split(`?`)
-		.pop()
-		.replace(/[^a-z0-9\/]/i, '')
-		.trim()
-		.split(`/`);
+	getAllSumario();
+
+	const getCODIGO = (x, strict = true) => {
+		const pr = strict
+			? `${x}`
+			: `${x}`.split(`?t=`)[0].split(`.json`)[0];
+
+		return `${pr}`
+			.split(`?`)
+			.pop()
+			.split(`/`)
+			.pop()
+			.replace(/[^a-z0-9\/]/i, '')
+			.trim()
+			.split(`/`);
+	};
+
+	const CODIGO = getCODIGO(window.location.search);
 
 	// Texto auxiliar exibido quando aplicável (link para sumário)
 	const SUMARIO = `\n\n<br /><br /><p>Consulte o <a href="/?sumario0">Sumário</a> para lista de rádios.</p>`;
 
+	const formatarCID = (x) =>
+		x
+			.trim()
+			.replace(/[^a-z0-9\/]/gi, '')
+			/*formata como 53500-077722-2025-44-uvk6 */
+			.replace(
+				/^(\d{5})(\d{6})(\d{4})(\d{2})([\w\d]+)?$/i,
+				'$1-$2-$3-$4$5'.replace('$5', (match) =>
+					match ? '-' + match : '',
+				),
+			);
+
 	// ID principal a partir da URL (primeira parte)
-	const CID = CODIGO[0].trim();
+	const CID = formatarCID(CODIGO[0]);
 
 	// Referências para elementos de UI
 	const LOAD = _('.lds');
@@ -163,7 +337,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	// Utilitários curtos
 	const IS_STRING = (x) => typeof x === `string`;
 	const KEYSofOBJ = (x) => Object.keys(x);
-	const HAS_KEY = (o, y) => Object.hasOwn(o, y);
+	const HAS_KEY = (o, prop) =>
+		Object.hasOwn(o, prop) && typeof o[prop] !== 'undefined';
 	const IS_ARR = (x) => Array.isArray(x);
 
 	/**
@@ -183,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	};
 
 	// Validação inicial do CID (somente alfanum / slash)
-	if (/([^a-z0-9])/i.test(CID)) return ERR(...MSG2('1T'));
+	if (/([^a-z0-9-])/i.test(CID)) return ERR(...MSG2('1T'));
 
 	// Código secundário (destino) extraído da URL, se presente
 	const CED =
@@ -365,7 +540,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 			row.addEventListener('click', (e) => {
 				try {
-					window.location = '/?' + o[0].replace(/[^a-z0-9]/i, ``);
+					window.location =
+						'/?' + `${o[0]}${o[3]}`.replaceAll(/[^\w\d]/i, '');
 				} catch (error) {}
 			});
 
@@ -398,15 +574,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	// Se CID presente, monta caminho do arquivo de dados e tenta carregar
 	if (CODIGO) {
-		const fURL =
-			`DADOS/homologacoes/${CID}.json?t=` +
+		const treate_cid = (u) =>
+			`DADOS/homologacoes/${u}.json?t=` +
 			Math.random().toString(36).substring(2, 18);
 
-		fetch(fURL)
-			.then((response) => {
-				if (!response.ok) return ERR(...MSG2(`AX`, 1));
-				return response.json();
-			})
+		const fURL = treate_cid(CID);
+
+		const retryUrls = async (from) => {
+			const all = await getAllSumario();
+			let kk = ``;
+			let rr = ``;
+			let chegouArroba = false;
+			let loopcount = 0;
+
+			do {
+				kk = (from ? getCODIGO(from, false)[0] : CID)
+					.replace(/[^\w\d]/gi, '')
+					.substring(0, 17);
+
+				chegouArroba = all[kk].indexOf(`@`) < 0;
+
+				if (chegouArroba) {
+					from = `/?${all[kk]}`;
+					continue;
+				}
+
+				rr = HAS_KEY(all, kk)
+					? treate_cid(all[kk].replace(`@`, formatarCID(kk)))
+					: null;
+			} while (chegouArroba && ++loopcount <= 3);
+
+			return rr;
+		};
+
+		cachedFetch([fURL, retryUrls, retryUrls, retryUrls])
 			.then((data) => {
 				// Sumário (páginas) tem formato especial
 				if (/sumario[\d]+/i.test(CID.toLowerCase())) {

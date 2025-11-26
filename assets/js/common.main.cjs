@@ -61,8 +61,8 @@ const capitalizar = (str) =>
 /**
  * Regular expressions for URL and path validation
  */
-const REGEX_PROTOCOL = /^\s*[a-zA-Z]+:\/\//;
-const REGEX_LOCAL = /^(?!(?:[a-zA-Z]+:)?\/\/|[a-zA-Z]:\\|\/).*/;
+const REGEX_PROTOCOL = /^\s*[a-zA-Z]+:\/\//i;
+const REGEX_LOCAL = /^(?!(?:[a-zA-Z]+:)?\/\/|[a-zA-Z]:\\|\/).*/i;
 
 /**
  * Wraps non-numeric values in quotes for string representation
@@ -154,6 +154,30 @@ async function _GET(url) {
 	const normalize = (p) =>
 		p.replace(/\/\/+/g, '/').replace(/\\+/g, '/');
 
+	const tryJson = async (r) => {
+		if (typeof r === `object`) {
+			try {
+				return await r.json();
+			} catch (error) {}
+
+			try {
+				return tryJson(await r.text());
+			} catch (error) {}
+
+			return await r;
+		}
+
+		if (typeof r === `string`) {
+			try {
+				return JSON.parse(r);
+			} catch (error) {}
+
+			return r;
+		}
+
+		return await r;
+	};
+
 	const buildFallbacks = (u) => {
 		const list = [u];
 		if (is_relative) list.push('./' + u, '../' + u, '../../' + u);
@@ -175,7 +199,7 @@ async function _GET(url) {
 	const loadLocal = (file) => {
 		try {
 			if (isNODE && fs.existsSync(file)) {
-				return JSON.parse(fs.readFileSync(file, 'utf8'));
+				return tryJson(fs.readFileSync(file, 'utf8'));
 			}
 		} catch (e) {
 			return [[[-105]]];
@@ -192,7 +216,7 @@ async function _GET(url) {
 					resp.on('data', (c) => (data += c));
 					resp.on('end', () => {
 						try {
-							resolve(JSON.parse(data));
+							resolve(tryJson(data));
 						} catch (err) {
 							reject(err);
 						}
@@ -206,10 +230,11 @@ async function _GET(url) {
 		if (isNODE && !isProtocol) return [[[-107]]];
 		const r = await fetch(url);
 		if (!r.ok) return [[[-104]]];
-		return r.json();
+		return tryJson(await r.text());
 	};
 
 	const downloadResource = async (link) => {
+		console.log(`\n\n:: '${link}'\n`);
 		if (!CACHED_DOWNLOAD.hasOwnProperty(link)) {
 			try {
 				CACHED_DOWNLOAD[link] =
@@ -245,7 +270,12 @@ async function _GET(url) {
 						(COUNT_ERROR_DOWNLOAD.hasOwnProperty(p)
 							? COUNT_ERROR_DOWNLOAD[p]
 							: 0) + 1;
-					console.warn(`\n\n=== Erro commom.main: ===\n`, e, `\n\n`);
+					console.warn(
+						`\n\n=== Erro commom.main: ===\n`,
+						`> '${p}'\n`,
+						e,
+						`\n\n`,
+					);
 				}
 			}
 		}

@@ -153,20 +153,21 @@ async function processarRegistro(registro, contadorCidades) {
  * @param {Function} carregarDados - Carrega dados
  * @param {Function} salvarDados - Salva dados processados
  * @param {Function|null} callback - Função callback opcional
- * @param {Array} fontes - Fontes de dados
  * @param {string} storageKey - Chave de cache
  * @returns {Promise<Object>} Resultados do processamento
  */
-async function processarJSON(
+async function run(
 	resolverCaminhos,
 	carregarDados,
 	salvarDados,
 	callback = null,
-	fontes = [PATH_FILE, __RPTDR_LNK],
 	storageKey = 'radioid.net',
 ) {
 	try {
-		const jsonData = await carregarDados(fontes, storageKey);
+		const jsonData = await carregarDados(
+			[PATH_FILE, __RPTDR_LNK],
+			storageKey,
+		);
 
 		if (
 			typeof jsonData !== 'object' ||
@@ -258,13 +259,16 @@ async function processarJSON(
 
 // Exportações Node.js
 if (isNODE) {
-	module.exports = { processarJSON };
+	module.exports = { run };
 }
 
 // Exportações globais (Browser)
 if (typeof globalThis !== 'undefined') {
-	globalThis.radioidnet = { processarJSON: processarJSON };
+	globalThis.RPT_SOURCES = {
+		...(globalThis.RPT_SOURCES ? globalThis.RPT_SOURCES : {}),
+		rt4d: { run: run },
+	};
 
 	if (typeof window !== 'undefined')
-		window.radioidnet = globalThis.radioModels;
+		window.radioidnet = globalThis.RPT_SOURCES;
 }

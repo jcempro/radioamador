@@ -186,11 +186,37 @@ function tableToJSON(html) {
 	}
 }
 
-// Versões específicas para cada ambiente
-if (typeof module !== 'undefined' && module.exports) {
-	// Node.js
-	module.exports = { extractTableData, tableToJSON };
-} else if (typeof window !== 'undefined') {
-	// Navegador
-	window.tableToJSON = tableToJSON;
+/**
+ * Processa JSON completo de repetidores
+ * @param {Function} resolverCaminhos - Resolve caminhos de arquivos
+ * @param {Function} carregarDados - Carrega dados
+ * @param {Function} salvarDados - Salva dados processados
+ * @param {Function|null} callback - Função callback opcional
+ * @param {string} storageKey - Chave de cache
+ * @returns {Promise<Object>} Resultados do processamento
+ */
+async function run(
+	resolverCaminhos,
+	carregarDados,
+	salvarDados,
+	callback = null,
+) {
+	const r = await commom._GET(fromURL);
+	return tableToJSON(r);
+}
+
+// Exportações Node.js
+if (isNODE) {
+	module.exports = { run };
+}
+
+// Exportações globais (Browser)
+if (typeof globalThis !== 'undefined') {
+	globalThis.RPT_SOURCES = {
+		...(globalThis.RPT_SOURCES ? globalThis.RPT_SOURCES : {}),
+		rt4d: { run: run },
+	};
+
+	if (typeof window !== 'undefined')
+		window.radioidnet = globalThis.RPT_SOURCES;
 }

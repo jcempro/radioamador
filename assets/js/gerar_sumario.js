@@ -2,28 +2,79 @@
 import fs from 'fs';
 import path from 'path';
 
-const dbDir = path.join('.', 'radio', 'db');
-const sumarioBase = path.join('.', 'radio', 'db', 'sumario'); // base: sumario-0.json, sumario-1.json etc.
+/**
+ * Common utilities module import
+ */
+import * as constants from './constants.main.cjs';
+
+const sumarioBase = path.join(constants.HOMOLOGACACOES, 'sumario'); // base: sumario-0.json, sumario-1.json etc.
+
+const ALL_IDs = {};
 
 function gerarSumario() {
 	// Lista todos os arquivos .json dentro de /radio/db
 	const arquivos = fs
-		.readdirSync(dbDir)
+		.readdirSync(constants.HOMOLOGACACOES)
 		.filter((f) => f.endsWith('.json'));
 
+	const rNoWD = (x) => `${x}`.replace(/[^\w\d]/gi, ``);
+
+	const regex_start_fname =
+		/^(\d{5}[-\.]?\d{6}[-\.]?\d{4}[-\.]?\d{2}[-\.]?)/i;
+
 	const resultado = arquivos
-		.filter((arquivo) => !/\??sumario[\d]+/i.test(arquivo))
+		.filter((arquivo) => !/^sumario([\d]+|_)/i.test(arquivo))
 		.map((arquivo) => {
-			const caminho = path.join(dbDir, arquivo);
+			const caminho = path.join(constants.HOMOLOGACACOES, arquivo);
 			const conteudo = JSON.parse(fs.readFileSync(caminho, 'utf-8'));
-			const nome = path.basename(arquivo, '.json');
-			const ID = conteudo.cid;
+
+			const fname_or = path
+				.basename(arquivo, '.json')
+				.match(regex_start_fname)[0];
+
+			const fname_pos = path
+				.basename(arquivo, '.json')
+				.replace(regex_start_fname, '@');
+			/**
+			 * id = string | [id, url] | (string | [id, url])[]
+			 * queremos obter um último id
+			 */
+			const novo_id = rNoWD(
+				Array.isArray(conteudo.id)
+					? (Array.isArray(conteudo.id[0])
+							? conteudo.id[conteudo.id.length - 1]
+							: conteudo.id)[0]
+					: conteudo.id,
+			);
+
+			const cid = conteudo.cid;
 			const marca = conteudo.mc
 				? conteudo.mc.charAt(0).toUpperCase() +
 				  conteudo.mc.slice(1).toLowerCase()
 				: '';
 			const modelo = conteudo.md || '';
-			return [nome, `${marca};${modelo}`, ID];
+
+			/**
+			 * id = string | [id, url] | (string | [id, url])[]
+			 * queremos percorrer todos os id
+			 */
+			if (
+				Array.isArray(conteudo.id) &&
+				Array.isArray(conteudo.id[0])
+			) {
+				for (const k in conteudo.id) {
+					const a_id = rNoWD(conteudo.id[k][0]);
+					ALL_IDs[a_id] =
+						rNoWD(fname_or) === a_id ? fname_pos : fname_or;
+				}
+			} else
+				ALL_IDs[
+					rNoWD(
+						Array.isArray(conteudo.id) ? conteudo.id[0] : conteudo.id,
+					)
+				] = fname_pos;
+
+			return [novo_id, `${marca};${modelo}`, cid, fname_pos];
 		});
 
 	// Paginação: 25 itens por página
@@ -34,14 +85,17 @@ function gerarSumario() {
 	// Remove arquivos de sumário existentes que excedam o totalPaginas
 	const regexSumario = /sumario(\d+)\.json/i;
 
-	fs.readdirSync(dbDir)
+	fs.readdirSync(constants.HOMOLOGACACOES)
 		.filter((f) => regexSumario.test(f))
 		.forEach((arquivoSumario) => {
 			const match = arquivoSumario.match(regexSumario);
 			const idPagina = parseInt(match[1], 10);
 
 			if (idPagina >= totalPaginas) {
-				const caminhoExcedente = path.join(dbDir, arquivoSumario);
+				const caminhoExcedente = path.join(
+					constants.HOMOLOGACACOES,
+					arquivoSumario,
+				);
 				fs.unlinkSync(caminhoExcedente);
 				console.log(
 					`🗑️ Arquivo excedente removido: ${arquivoSumario}`,
@@ -62,9 +116,16 @@ function gerarSumario() {
 			pagina.push(-1);
 		}
 
-		const nomeArquivo = `${sumarioBase}${i}.json`;
-		fs.writeFileSync(nomeArquivo, JSON.stringify(pagina, null, 2));
+		fs.writeFileSync(
+			`${sumarioBase}${i}.json`,
+			JSON.stringify(pagina, null, 0),
+		);
 	}
+
+	fs.writeFileSync(
+		`${sumarioBase}_all.json`,
+		JSON.stringify(ALL_IDs, null, 0),
+	);
 
 	console.log(
 		`✅ ${totalPaginas} arquivos de sumário gerados, totalizando ${resultado.length} itens.`,

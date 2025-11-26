@@ -20,13 +20,16 @@ const commom = isNODE
 	: globalThis.commom;
 
 /**
- * Importa processador de dados Radio ID
+ * Modelos RT4D
  */
-const radioidnet = isNODE
-	? require('./sources/radioid.net.main.cjs')
+const SOURCES = isNODE
+	? {
+			radioid: require('./sources/radioid.net.main.cjs'),
+			labresp: require('./sources/labre.sp.main.cjs'),
+	  }
 	: typeof window !== `undefined`
-	? window.radioidnet
-	: globalThis.radioidnet;
+	? window.RPT_SOURCES
+	: globalThis.RPT_SOURCES;
 
 /**
  * Modelos RT4D
@@ -291,6 +294,19 @@ async function salvarDados(
 		: gravarBrowser(caminhoFinal, conteudoParaSalvar, formato);
 }
 
+const salvarCSV = (registros, caminhos, estadoSigla, formato) => {
+	salvarDados(registros, caminhos, estadoSigla, formato);
+	salvarDados(
+		csvMODELOS.rt4d.converterParaModelo(
+			registros,
+			csvMODELOS.rt4d.MODEL,
+		),
+		caminhos,
+		estadoSigla,
+		'csv',
+	);
+};
+
 // Execução específica por ambiente
 if (!isNODE) {
 	if (document.readyState === 'loading') {
@@ -304,21 +320,10 @@ if (!isNODE) {
 } else {
 	// Node.js: processa Radio ID e salva JSON + CSV
 	(async () => {
-		await radioidnet.processarJSON(
+		await SOURCES.radioid.run(
 			resolverCaminhos,
 			carregarDados,
-			(registros, caminhos, estadoSigla, formato) => {
-				salvarDados(registros, caminhos, estadoSigla, formato);
-				salvarDados(
-					csvMODELOS.rt4d.converterParaModelo(
-						registros,
-						csvMODELOS.rt4d.MODEL,
-					),
-					caminhos,
-					estadoSigla,
-					'csv',
-				);
-			},
+			salvarCSV,
 			(error, resultados) => {
 				if (!resultados)
 					throw new Error(
@@ -329,6 +334,20 @@ if (!isNODE) {
 					resultados.contents,
 					`${RPT_PATH}/radioidnet.csv`,
 				);
+			},
+		);
+
+		await SOURCES.labresp.run(
+			resolverCaminhos,
+			carregarDados,
+			salvarCSV,
+			(error, resultados) => {
+				if (!resultados)
+					throw new Error(
+						`\n[ERROR] resultados é inválido ou vazio.\n`,
+					);
+
+				salvarDados(resultados.contents, `${RPT_PATH}/labre-sp.csv`);
 			},
 		);
 	})();
