@@ -182,7 +182,8 @@ const getAllSumario = async () => {
  * - controlar UI (carregando/listagem)
  * - buscar arquivo JSON local e renderizar dados ou redirecionar
  */
-document.addEventListener('DOMContentLoaded', () => {
+function ___loadMain() {
+	console.log('oieeee-----');
 	getAllSumario();
 
 	const getCODIGO = (x, strict = true) => {
@@ -709,4 +710,10 @@ document.addEventListener('DOMContentLoaded', () => {
 	} else {
 		ERR(...MSG2('CX'));
 	}
-});
+}
+
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', ___loadMain);
+} else {
+	___loadMain;
+}
