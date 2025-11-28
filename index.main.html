@@ -8,16 +8,44 @@
 		/>
 		<meta name="robots" content="noindex" />
 		<title>Carregando...</title>
-		<link rel="stylesheet" href="assets/css/index.css" />
-		<script src="assets/js/index.main.js"></script>
 		<script>
-			(function () {
-				const n = 'jcem.pro';
-				const c = document.createElement('link');
+			(function (L, D) {
+				const WEB =
+					/^(?=.{1,253}$)(?!.*\.(local|lan|home|test|invalid)$)([a-zA-Z0-9-]{1,63}\.)+[A-Za-z]{2,}$/i;
+				const EL = (x, p = {}) =>
+					Object.assign(D.createElement(x), p);
+				const ADD = (x) => D.head.appendChild(x);
+
+				const comMain = (x) =>
+					x.replace(
+						/\.(c?js|css)/gi,
+						`${!WEB.test() ? '.main' : ''}.$1`,
+					);
+
+				const c = EL('link');
 				c.rel = 'canonical';
-				c.href = location.href.replace(location.hostname, n);
-				document.head.appendChild(c);
-			})();
+				c.href = L.href
+					.replace(L.hostname, 'jcem.pro')
+					.replace(/jcem\.pro:/, 'jcem.pro');
+				ADD(c);
+
+				for (const t of [
+					comMain('assets/css/index.css', `assets/js/index.js`),
+				]) {
+					const tg = /\.c?js/i.test(t)
+						? 'script'
+						: /\.css/i.test(t)
+						? 'link'
+						: null;
+					ADD(
+						EL(tg, {
+							rel: tg === 'link' ? 'stylesheet' : undefined,
+							href: t,
+							src: t,
+						}),
+					);
+				}
+			})(location, document);
 		</script>
 		<style>
 			:root {
