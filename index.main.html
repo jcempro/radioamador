@@ -24,9 +24,9 @@
 
 				const c = EL('link');
 				c.rel = 'canonical';
-				c.href = L.href
-					.replace(L.hostname, 'jcem.pro')
-					.replace(/jcem\.pro:/, 'jcem.pro');
+				c.href = ((x) => {
+					L.href.replace(L.hostname, x).replace(/jcem\.pro:/, x);
+				})('jcem.pro');
 				ADD(c);
 
 				for (const t of [
