@@ -519,9 +519,11 @@ document.addEventListener('DOMContentLoaded', () => {
 					return _('.dl table');
 			  })();
 
-		const add_row = (o, t = 0) => {
+		const add_row = (o, t = 0, max = 0) => {
 			const row = CREATE_EL(0, 'tr', '');
 			for (const k in o) {
+				if (k > o.length + max - 1) break;
+
 				const v = o[k]
 					.split(`;`)
 					.map((v) => (k == 1 ? `<i>${v}</i> ` : v))
@@ -539,9 +541,14 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 
 			row.addEventListener('click', (e) => {
+				console.log(
+					'/?' +
+						`${o[0]}`.replace(/[^\w\d]/gi, '') +
+						`${o[o.length - 1]}`,
+				);
 				try {
 					window.location =
-						'/?' + `${o[0]}${o[3]}`.replaceAll(/[^\w\d]/i, '');
+						'/?' + `${o[0]}`.replace(/[^\w\d]/gi, '') + `${o[3]}`;
 				} catch (error) {}
 			});
 
@@ -561,11 +568,14 @@ document.addEventListener('DOMContentLoaded', () => {
 								${e < 0 ? '' : `<a href="?sumario${e}">Próximo »</a>`}
 								</p>`,
 				);
-			} else if (!Array.isArray(e) || e.length !== SUM_COLS.length) {
+			} else if (
+				!Array.isArray(e) ||
+				e.length !== SUM_COLS.length + 1
+			) {
 				return ERR(...MSG3('S2'));
 			}
 
-			add_row(e);
+			add_row(e, 0, -1);
 		}
 
 		TITULO('Sumário');
