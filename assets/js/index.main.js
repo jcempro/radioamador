@@ -614,11 +614,8 @@ function ___loadMain() {
 				CREATE_EL(
 					row,
 					'td',
-					'',
-					EnclouseTag(
-						`${v}${k == 0 && !t ? EnclouseTag('🔗') : ''}`,
-						'p',
-					),
+					k == 0 && !t ? 'process' : '',
+					EnclouseTag(`${v}`, 'p'),
 				);
 			}
 

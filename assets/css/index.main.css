@@ -32,24 +32,9 @@ a {
 	color: var(--blue2);
 	text-decoration: none;
 }
-a::after {
-	content: '\f35d';
-	font-family: 'Font Awesome 6 Free';
-	display: inline-block;
-	margin: 0.2em;
-	font-weight: 900;
-
-	padding: 0;
-	padding-left: 0.2em;
-	opacity: 0.7;
-	line-height: 0.6em;
-	text-align: left;
-	font-size: 0.8em !important;
-}
 
 a:hover,
 a:hover::after {
-	color: rgb(177, 13, 13);
 	text-decoration: underline;
 }
 
@@ -92,21 +77,47 @@ a:hover::after {
 	font-size: 0.9em;
 }
 
-.dl-row {
-	display: block;
-	padding: 0.7em;
-	min-height: 1.5em;
-	margin: 0;
-	border: 1px solid var(--border);
+.tbl.x td.process > p::after,
+a::after {
+	content: '\f35d';
+	font-family: 'Font Awesome 6 Free';
+	display: inline-block;
+	margin: 0.2em;
+	font-weight: 900;
+
+	padding: 0;
+	padding-left: 0.2em;
+	opacity: 0.7;
+	line-height: 0.6em;
+	text-align: left;
+	font-size: 0.8em !important;
 }
 
-dl > .dl-row:first-of-type {
+.dl-row {
+	display: block;
+	padding: 0.5em;
+	min-height: 1.5em;
+	margin: 0.7em 0;
+	border: 1px solid var(--border);
+	-webkit-box-shadow: 0.1em 0.1em 0.3em -0 rgba(0, 0, 0, 0.15);
+	box-shadow: 0.1em 0.1em 0.3em -0 rgba(0, 0, 0, 0.15);
+}
+
+.dl > .dl-row:hover,
+.dl > .dl-row:hover *,
+.dl > .dl-row:hover *::after,
+.dl > .dl-row:hover li::marker {
+	color: #fff;
+}
+
+.dl > .dl-row:first-of-type {
 	margin-top: 0;
 }
 
-dl > .dl-row:last-of-type {
+.dl > .dl-row:last-of-type {
 	margin-bottom: 0;
 }
+
 .dt,
 .dd {
 	vertical-align: middle;
@@ -116,9 +127,11 @@ dl > .dl-row:last-of-type {
 	text-transform: uppercase;
 	font-size: 0.8rem;
 	letter-spacing: 0.031rem;
-	margin: 0;
+	margin: 0em -0.5em;
+	margin-top: -0.5em;
+	padding: 0.25em 0.5em;
+	background-color: rgba(0, 0, 0, 0.15);
 	line-height: 0.8em;
-	border-bottom: 1px solid var(--border);
 }
 .dd {
 	padding-top: 0.3em;
@@ -231,14 +244,21 @@ tr:first-child * {
 
 .dl > .dl-row:nth-child(even),
 tr:nth-child(even) {
-	background: #e0e0e0;
+	background: #fff;
 }
 .dl > .dl-row:nth-child(odd),
 tr:nth-child(odd) {
 	background: #fff;
 }
+.dl > .dl-row:hover {
+	background-color: var(--text) !important;
+}
+
 tr:hover {
 	background: var(--blue2);
+}
+tr:hover,
+tr:hover * {
 	color: #fff;
 }
 tbody tr:last-of-type {
