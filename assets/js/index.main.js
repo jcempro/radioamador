@@ -179,17 +179,17 @@ function starthtml() {
 	const d = document,
 		i = [
 			[
-				'Validar documentos Anatel',
+				'Validar documentos Anatel ',
 				'http://www.anatel.gov.br/autenticidade',
 				'anatel.gov.br',
 			],
 			[
-				'Consultar peticionamento ou processo',
+				'Consultar peticionamento ou processo ',
 				'https://sei.anatel.gov.br/sei/modulos/pesquisa/md_pesq_processo_pesquisar.php?acao_externa=protocolo_pesquisar&amp;acao_origem_externa=protocolo_pesquisar&amp;id_orgao_acesso_externo=0',
 				'anatel.gov.br',
 			],
 			[
-				'Anotações pessoais com dicas e outros',
+				'Anotações pessoais com dicas e outros ',
 				'https://jeancarloem.com/radio',
 				'jeancarloem.com/radio',
 			],
