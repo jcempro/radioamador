@@ -715,5 +715,5 @@ function ___loadMain() {
 if (document.readyState === 'loading') {
 	document.addEventListener('DOMContentLoaded', ___loadMain);
 } else {
-	___loadMain;
+	___loadMain();
 }

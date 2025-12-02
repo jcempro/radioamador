@@ -67,17 +67,11 @@ a:hover::after {
 }
 
 .dl-row {
-	display: flex;
-	flex-wrap: wrap;
+	display: block;
 	padding: 0.7em;
-	padding-bottom: 0.2em;
 	min-height: 1.5em;
-	vertical-align: middle;
 	margin: 0;
 	border: 1px solid var(--border);
-}
-.dl-row:nth-child(odd) {
-	background: var(--gray2) !important;
 }
 
 dl > .dl-row:first-of-type {
@@ -89,28 +83,30 @@ dl > .dl-row:last-of-type {
 }
 .dt,
 .dd {
-	flex: 1 1;
 	vertical-align: middle;
 	padding: 0;
 }
 .dt {
-	font-weight: 600;
 	text-transform: uppercase;
 	font-size: 0.8rem;
 	letter-spacing: 0.031rem;
-	margin-top: 0.2em;
+	margin: 0;
 	line-height: 0.8em;
+	border-bottom: 1px solid var(--border);
 }
 .dd {
-	padding-left: 0.625rem;
+	padding-top: 0.3em;
+	padding-left: 0;
 	border-bottom: 1px solid var(--gray2);
+	font-weight: bold;
+	line-height: 1.15em;
 }
 .dd:last-of-type {
 	border: none;
 }
 .dt span,
 .dd span {
-	padding-left: 0.05em;
+	padding-left: 0;
 }
 h1 {
 	text-align: center;
@@ -206,9 +202,12 @@ tr:first-child * {
 	color: #fff;
 	font-weight: 700;
 }
+
+.dl > .dl-row:nth-child(even),
 tr:nth-child(even) {
 	background: #e0e0e0;
 }
+.dl > .dl-row:nth-child(odd),
 tr:nth-child(odd) {
 	background: #fff;
 }
