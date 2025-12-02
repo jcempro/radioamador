@@ -252,3 +252,12 @@ tbody tr:last-of-type {
 	margin-top: 1.25rem;
 	font-size: 1.2rem;
 }
+
+@media (max-width: 37.5rem) {
+	body {
+		padding: 0;
+	}
+	.container {
+		padding: 2rem 1rem;
+	}
+}

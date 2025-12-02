@@ -175,6 +175,87 @@ const getAllSumario = async () => {
 	return await cachedFetch(`/DADOS/homologacoes/sumario_all.json`);
 };
 
+function starthtml() {
+	const d = document,
+		i = [
+			[
+				'Validar documentos Anatel',
+				'http://www.anatel.gov.br/autenticidade',
+				'anatel.gov.br',
+			],
+			[
+				'Consultar peticionamento ou processo',
+				'https://sei.anatel.gov.br/sei/modulos/pesquisa/md_pesq_processo_pesquisar.php?acao_externa=protocolo_pesquisar&amp;acao_origem_externa=protocolo_pesquisar&amp;id_orgao_acesso_externo=0',
+				'anatel.gov.br',
+			],
+			[
+				'Anotações pessoais com dicas e outros',
+				'https://jeancarloem.com/radio',
+				'jeancarloem.com/radio',
+			],
+			['', '/?sumario0', 'Sumário', 'nl', ' de rádios.'],
+			[
+				'Acessível também em ',
+				'https://ide2lnk.github.io/radio/',
+				'//ide2lnk.github.io/radio/',
+				'',
+				' ou ',
+				'https://jcem-radio.github.io',
+				'//jcem-radio.github.io',
+				'.',
+			],
+			[
+				'',
+				'https://www.gov.br/anatel/pt-br/regulado/certificacao-de-produtos/formularios-certificacao',
+				'Instruções gerais para homologações',
+				'nl',
+			],
+			[
+				'',
+				'https://docs.google.com/document/d/1TLTAY82V8De8snHJq4R9NRBCxTPbe0Q6w9BqaoYU4AE/edit?tab=t.0',
+				'Manual SEI para homologação de rádios',
+			],
+			[
+				'',
+				'https://docs.google.com/document/d/1yOuq9kbBU2WstnwciOz7ECVysmNJ3ZwCns2uM_6FyYQ/edit?tab=t.0',
+				'Lista de rádios pré-habilitados',
+			],
+			[
+				'',
+				'https://docs.google.com/document/d/17cbebM53ntpm29-wCTdaOC6U56Iz1GWG0CR3AYUdZcc/edit?tab=t.0',
+				'Lista de rádios NÃO conformes',
+			],
+			[
+				'',
+				'',
+				'<sup>1</sup><strong>Homologação</strong> refere-se à própria homologação ou outro documento oficial análogo, como decisão ou despacho. Pode ser individual e pessoal ou comercial e geral.',
+				'nl',
+			],
+		],
+		c = d.createElement('div');
+	c.className = 'container';
+	c.innerHTML =
+		'<h1 id="ttl"></h1><p class="desc"></p><div class="dl"></div><ul class="main">' +
+		i
+			.map(
+				(r) =>
+					`<li${r[3] === 'nl' ? ' class="nl"' : ''}>${r[0] || ''}${
+						r[1]
+							? `<a href="${r[1]}"${
+									r[1].startsWith('http') ? ' target="_blank"' : ''
+							  }>${r[2]}</a>`
+							: r[2] || ''
+					}${r[4] || ''}${
+						r[5]
+							? `<a href="${r[5]}" target="_blank">${r[6]}</a>`
+							: ''
+					}${r[7] || ''}</li>`,
+			)
+			.join('') +
+		'</ul>';
+	d.body.appendChild(c);
+}
+
 /**
  * Inicialização após carregamento do DOM.
  * Responsável por:
@@ -183,7 +264,7 @@ const getAllSumario = async () => {
  * - buscar arquivo JSON local e renderizar dados ou redirecionar
  */
 function ___loadMain() {
-	console.log('oieeee-----');
+	starthtml();
 	getAllSumario();
 
 	const getCODIGO = (x, strict = true) => {

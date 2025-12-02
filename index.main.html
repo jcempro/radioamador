@@ -8,109 +8,116 @@
 		/>
 		<meta name="robots" content="noindex" />
 		<title>Carregando...</title>
+		<noscript>
+			<meta
+				http-equiv="refresh"
+				content="0; url=https://jcem.pro/NOSCRIPT"
+			/>
+		</noscript>
 		<script>
-			const EL = (x, p = {}) => Object.assign(D.createElement(x), p);
-
-			const ADD = (x) => D.head.appendChild(x);
-
-			const comMain = (x) =>
-				x.replace(
-					/\.(c?js|css)/gi,
-					(_, ext) =>
-						`${!WEB.test(L.hostname) ? '.main' : ''}.${ext}`,
-				);
-
-			async function ___auto(L, D) {
+			(function (L, D) {
 				const WEB =
 					/^(?=.{1,253}$)(?!.*\.(local|lan|home|test|invalid)$)([a-zA-Z0-9-]{1,63}\.)+[A-Za-z]{2,}$/i;
 
-				// Canonical
-				const c = EL('link');
-				c.rel = 'canonical';
-				c.href = ((x) => {
-					return L.href
-						.replace(L.hostname, x)
-						.replace(/jcem\.pro:/, x);
-				})('jcem.pro');
+				const EL = (x, p = {}) =>
+					Object.assign(D.createElement(x), p);
 
-				ADD(c);
+				const ADD = (x) => D.head.appendChild(x);
 
-				// Carregar arquivos e inserir conteúdo interno
-				for (const t of [
-					comMain('assets/css/index.css'),
-					comMain('assets/js/index.js'),
-				]) {
-					const tg = /\.c?js/i.test(t)
-						? 'script'
-						: /\.css/i.test(t)
-						? 'style'
-						: null;
+				const comMain = (x) =>
+					x.replace(
+						/\.(c?js|css)/gi,
+						(_, ext) =>
+							`${!WEB.test(L.hostname) ? '.main' : ''}.${ext}`,
+					);
 
-					if (!tg) continue;
+				async function ___auto() {
+					// Canonical
+					const c = EL('link');
+					c.rel = 'canonical';
+					c.href = ((x) => {
+						return L.href
+							.replace(L.hostname, x)
+							.replace(/jcem\.pro:/, x);
+					})('jcem.pro');
 
-					await fetch(t)
-						.then((r) => r.text())
-						.then((code) => {
-							const el = EL(tg);
-							el.textContent = code;
-							ADD(el);
-						})
-						.catch((err) =>
-							console.error('Erro ao carregar:', t, err),
-						);
+					ADD(c);
+
+					// Carregar arquivos e inserir conteúdo interno
+					for (const t of [
+						comMain('assets/css/index.css'),
+						comMain('assets/js/index.js'),
+					]) {
+						const tg = /\.c?js/i.test(t)
+							? 'script'
+							: /\.css/i.test(t)
+							? 'style'
+							: null;
+
+						if (!tg) continue;
+
+						await fetch(t)
+							.then((r) => r.text())
+							.then((code) => {
+								const el = EL(tg);
+								el.textContent = code;
+								ADD(el);
+							})
+							.catch((err) =>
+								console.error('Erro ao carregar:', t, err),
+							);
+					}
 				}
-			}
 
-			function ___Noto() {
-				const f = 'Noto Sans',
-					d = 'display:swap;',
-					s = 'src:local(',
-					e = ');',
-					u = 'https://fonts.gstatic.com/s/notosans/v28/';
-				const f2 = 'NotoSans';
-				const v = [
-					[
-						'',
-						400,
-						'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7du3mh',
-						`${f}`,
-						`${f}`,
-					],
-					[
-						'italic',
-						400,
-						'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7dunmh',
-						`${f} Italic`,
-						`${f}-Italic`,
-					],
-					[
-						'',
-						700,
-						'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5ar_dmD18Q',
-						`${f} Bold`,
-						`${f}-Bold`,
-					],
-					[
-						'italic',
-						700,
-						'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7dunmh',
-						`${f} Bold Italic`,
-						`${f}-BoldItalic`,
-					],
-				];
-				let c = '';
-				v.forEach((r) => {
-					c += `@font-face{font-family:'${f}';font-style:${
-						r[0]
-					};font-weight:${r[1]};${d}${s}'${r[3]}',local('${
-						r[4]
-					}'),url(${u + r[2]}.woff2)format('woff2')${e}}`;
-				});
-				ADD(EL('style', { textContent: c }));
-			}
+				function ___Noto() {
+					const f = 'Noto Sans',
+						d = 'display:swap;',
+						s = 'src:local(',
+						e = ');',
+						u = 'https://fonts.gstatic.com/s/notosans/v28/';
+					const f2 = 'NotoSans';
+					const v = [
+						[
+							'',
+							400,
+							'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7du3mh',
+							`${f}`,
+							`${f}`,
+						],
+						[
+							'italic',
+							400,
+							'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7dunmh',
+							`${f} Italic`,
+							`${f}-Italic`,
+						],
+						[
+							'',
+							700,
+							'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5ar_dmD18Q',
+							`${f} Bold`,
+							`${f}-Bold`,
+						],
+						[
+							'italic',
+							700,
+							'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7dunmh',
+							`${f} Bold Italic`,
+							`${f}-BoldItalic`,
+						],
+					];
+					let c = '';
+					v.forEach((r) => {
+						c += `@font-face{font-family:'${f}';font-style:${
+							r[0]
+						};font-weight:${r[1]};${d}${s}'${r[3]}',local('${
+							r[4]
+						}'),url(${u + r[2]}.woff2)format('woff2')${e}}`;
+					});
+					ADD(EL('style', { textContent: c }));
+				}
 
-			(function (L, D) {
-				___auto(L, D);
+				___auto();
 				___Noto();
 			})(location, document);
 		</script>
@@ -145,61 +152,6 @@
 			div.container {
 				display: none;
 			}
-			noscript {
-				text-align: center;
-			}
-			noscript main {
-				background: #fff;
-				border: 0.1rem solid var(--blue);
-				border-radius: var(--radius);
-				box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
-				width: min(90vw, 28rem);
-				max-width: 90vw;
-				padding: 1.5rem;
-				box-sizing: border-box;
-				overflow-wrap: break-word;
-				display: inline-block;
-			}
-			noscript h1 {
-				background: #845050;
-				color: #fff;
-				font-size: 1.5rem;
-				font-weight: 700;
-				display: flex;
-				align-items: center;
-				gap: 0.5rem;
-				border-radius: var(--radius) var(--radius) 0 0;
-				padding: 0.5em 1em;
-				margin: calc(-1rem - 1px) calc(-1rem - 2px) 0.3rem;
-			}
-			noscript h1 span {
-				font-size: 1.8rem;
-				margin: 0.2rem;
-			}
-			noscript p {
-				margin: 0.2rem 0;
-				line-height: 1.4;
-				text-align: left;
-			}
-			noscript .lang {
-				border-top: 1px solid rgba(0, 0, 0, 0.1);
-				margin-top: 1rem;
-				padding-top: 0.5rem;
-				font-size: 0.9rem;
-			}
-			noscript .lang:first-of-type {
-				border: none;
-			}
-			noscript .lang h2 {
-				color: var(--blue);
-				margin-bottom: 0.2rem;
-				font-size: 0.9rem;
-			}
-			noscript strong {
-				color: var(--amber);
-				font-style: italic;
-				margin-left: 0.4em;
-			}
 			.lds {
 				position: fixed;
 				top: 0;
@@ -232,143 +184,10 @@
 				.container {
 					padding: 2rem 1rem;
 				}
-				.dt,
-				.dd {
-					display: block;
-					padding-left: 0;
-				}
-				.dt {
-					margin-bottom: 0.1875rem;
-				}
-				.dd {
-					padding-bottom: 0.625rem;
-					border-bottom: 1px solid var(--gray2);
-				}
-			}
-			@media (max-width: 600px) {
-				noscript main {
-					max-width: 85vw;
-					padding: 1rem;
-				}
-				noscript h1 {
-					font-size: 1.3rem;
-				}
 			}
 		</style>
 	</head>
 	<body>
 		<div class="lds"></div>
-		<div class="container">
-			<h1 id="ttl"></h1>
-			<p class="desc"></p>
-			<div class="dl"></div>
-			<ul class="main">
-				<li>
-					Validar documentos Anatel
-					<a
-						target="_blank"
-						href="http://www.anatel.gov.br/autenticidade"
-						>anatel.gov.br</a
-					>
-				</li>
-				<li>
-					Consultar peticionamento ou processo
-					<a
-						target="_blank"
-						href="https://sei.anatel.gov.br/sei/modulos/pesquisa/md_pesq_processo_pesquisar.php?acao_externa=protocolo_pesquisar&amp;acao_origem_externa=protocolo_pesquisar&amp;id_orgao_acesso_externo=0"
-						>anatel.gov.br</a
-					>
-				</li>
-				<li>
-					Anotações pessoais com dicas e outros
-					<a target="_blank" href="https://jeancarloem.com/radio"
-						>jeancarloem.com/radio</a
-					>
-				</li>
-				<li class="nl">
-					<a href="/?sumario0">Sumário</a> de rádios.
-				</li>
-				<li>
-					Acessível também em
-					<a href="https://ide2lnk.github.io/radio/"
-						>//ide2lnk.github.io/radio/</a
-					>
-					ou
-					<a href="https://jcem-radio.github.io"
-						>//jcem-radio.github.io</a
-					>.
-				</li>
-				<li class="nl">
-					<a
-						target="_blank"
-						href="https://www.gov.br/anatel/pt-br/regulado/certificacao-de-produtos/formularios-certificacao"
-						>Instruções gerais para homologações</a
-					>
-				</li>
-				<li>
-					<a
-						target="_blank"
-						href="https://docs.google.com/document/d/1TLTAY82V8De8snHJq4R9NRBCxTPbe0Q6w9BqaoYU4AE/edit?tab=t.0"
-						>Manual SEI para homologação de rádios</a
-					>
-				</li>
-				<li>
-					<a
-						target="_blank"
-						href="https://docs.google.com/document/d/1yOuq9kbBU2WstnwciOz7ECVysmNJ3ZwCns2uM_6FyYQ/edit?tab=t.0"
-						>Lista de rádios pré-habilitados</a
-					>
-				</li>
-				<li>
-					<a
-						target="_blank"
-						href="https://docs.google.com/document/d/17cbebM53ntpm29-wCTdaOC6U56Iz1GWG0CR3AYUdZcc/edit?tab=t.0"
-						>Lista de rádios NÃO conformes</a
-					>
-				</li>
-				<li class="nl">
-					<sup>1</sup><strong>Homologação</strong> refere-se à própria
-					homologação ou outro documento oficial análogo, como decisão
-					ou despacho. Pode ser individual e pessoal ou comercial e
-					geral.
-				</li>
-			</ul>
-		</div>
-		<noscript
-			><main>
-				<h1><span>⚠️</span>Problem / Problema / 问题</h1>
-				<div class="lang">
-					<h2>🇺🇸 English</h2>
-					<p>
-						<span>⚠️</span><strong>JavaScript is disabled.</strong
-						><br />This prevents automatic redirection to your
-						destination.
-					</p>
-				</div>
-				<div class="lang">
-					<h2>🇧🇷 Português</h2>
-					<p>
-						<span>⚠️</span
-						><strong>O JavaScript está desativado.</strong><br />Isso
-						impede o redirecionamento automático para o destino.
-					</p>
-				</div>
-				<div class="lang">
-					<h2>🇪🇸 Español</h2>
-					<p>
-						<span>⚠️</span
-						><strong>JavaScript está deshabilitado.</strong><br />Esto
-						impide la redirección automática al destino.
-					</p>
-				</div>
-				<div class="lang">
-					<h2>🇨🇳 中文（普通话）</h2>
-					<p>
-						<span>⚠️</span><strong>JavaScript 已被禁用。</strong
-						><br />这会阻止自动跳转到目标页面。
-					</p>
-				</div>
-			</main></noscript
-		>
 	</body>
 </html>
