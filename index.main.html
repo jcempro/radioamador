@@ -9,21 +9,20 @@
 		<meta name="robots" content="noindex" />
 		<title>Carregando...</title>
 		<script>
+			const EL = (x, p = {}) => Object.assign(D.createElement(x), p);
+
+			const ADD = (x) => D.head.appendChild(x);
+
+			const comMain = (x) =>
+				x.replace(
+					/\.(c?js|css)/gi,
+					(_, ext) =>
+						`${!WEB.test(L.hostname) ? '.main' : ''}.${ext}`,
+				);
+
 			async function ___auto(L, D) {
 				const WEB =
 					/^(?=.{1,253}$)(?!.*\.(local|lan|home|test|invalid)$)([a-zA-Z0-9-]{1,63}\.)+[A-Za-z]{2,}$/i;
-
-				const EL = (x, p = {}) =>
-					Object.assign(D.createElement(x), p);
-
-				const ADD = (x) => D.head.appendChild(x);
-
-				const comMain = (x) =>
-					x.replace(
-						/\.(c?js|css)/gi,
-						(_, ext) =>
-							`${!WEB.test(L.hostname) ? '.main' : ''}.${ext}`,
-					);
 
 				// Canonical
 				const c = EL('link');
@@ -62,8 +61,57 @@
 				}
 			}
 
+			function ___Noto() {
+				const f = 'Noto Sans',
+					d = 'display:swap;',
+					s = 'src:local(',
+					e = ');',
+					u = 'https://fonts.gstatic.com/s/notosans/v28/';
+				const f2 = 'NotoSans';
+				const v = [
+					[
+						'',
+						400,
+						'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7du3mh',
+						`${f}`,
+						`${f}`,
+					],
+					[
+						'italic',
+						400,
+						'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7dunmh',
+						`${f} Italic`,
+						`${f}-Italic`,
+					],
+					[
+						'',
+						700,
+						'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5ar_dmD18Q',
+						`${f} Bold`,
+						`${f}-Bold`,
+					],
+					[
+						'italic',
+						700,
+						'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7dunmh',
+						`${f} Bold Italic`,
+						`${f}-BoldItalic`,
+					],
+				];
+				let c = '';
+				v.forEach((r) => {
+					c += `@font-face{font-family:'${f}';font-style:${
+						r[0]
+					};font-weight:${r[1]};${d}${s}'${r[3]}',local('${
+						r[4]
+					}'),url(${u + r[2]}.woff2)format('woff2')${e}}`;
+				});
+				ADD(EL('style', { textContent: c }));
+			}
+
 			(function (L, D) {
 				___auto(L, D);
+				___Noto();
 			})(location, document);
 		</script>
 
@@ -78,47 +126,6 @@
 				--text: #333;
 				--bg: #f4f7f9;
 				--radius: 1rem;
-			}
-
-			@font-face {
-				font-family: 'Noto Sans';
-				font-style: normal;
-				font-weight: 400;
-				font-display: swap;
-				src: local('Noto Sans'), local('NotoSans'),
-					url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap')
-						format('woff2');
-			}
-
-			@font-face {
-				font-family: 'Noto Sans';
-				font-style: italic;
-				font-weight: 400;
-				font-display: swap;
-				src: local('Noto Sans Italic'), local('NotoSans-Italic'),
-					url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital@1&display=swap')
-						format('woff2');
-			}
-
-			@font-face {
-				font-family: 'Noto Sans';
-				font-style: normal;
-				font-weight: 700;
-				font-display: swap;
-				src: local('Noto Sans Bold'), local('NotoSans-Bold'),
-					url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@700&display=swap')
-						format('woff2');
-			}
-
-			@font-face {
-				font-family: 'Noto Sans';
-				font-style: italic;
-				font-weight: 700;
-				font-display: swap;
-				src: local('Noto Sans Bold Italic'),
-					local('NotoSans-BoldItalic'),
-					url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@1,700&display=swap')
-						format('woff2');
 			}
 
 			* {

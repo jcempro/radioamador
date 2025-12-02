@@ -1,3 +1,33 @@
+@font-face {
+	font-family: 'Font Awesome 6 Free';
+	font-style: normal;
+	font-weight: 900;
+	font-display: block;
+	src: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-solid-900.woff2')
+			format('woff2'),
+		local('Font Awesome 6 Free');
+}
+
+@font-face {
+	font-family: 'Font Awesome 6 Brands';
+	font-style: normal;
+	font-weight: 400;
+	font-display: block;
+	src: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-brands-400.woff2')
+			format('woff2'),
+		local('Font Awesome 6 Brands');
+}
+
+@font-face {
+	font-family: 'Font Awesome 6 Free';
+	font-style: normal;
+	font-weight: 400;
+	font-display: block;
+	src: url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-regular-400.woff2')
+			format('woff2'),
+		local('Font Awesome 6 Free');
+}
+
 a {
 	color: var(--blue2);
 	text-decoration: none;
