@@ -7,8 +7,6 @@ a::after {
 	display: inline-block;
 	margin: 0.15em;
 	font-weight: 900;
-	font-family: system-ui, 'Segoe UI', 'Apple Color Emoji',
-		'Noto Color Emoji', sans-serif;
 	color: var(--gray);
 	border: 1px solid var(--border);
 	background: var(--gray2);

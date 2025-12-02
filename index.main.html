@@ -79,8 +79,52 @@
 				--bg: #f4f7f9;
 				--radius: 1rem;
 			}
+
+			@font-face {
+				font-family: 'Noto Sans';
+				font-style: normal;
+				font-weight: 400;
+				font-display: swap;
+				src: local('Noto Sans'), local('NotoSans'),
+					url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap')
+						format('woff2');
+			}
+
+			@font-face {
+				font-family: 'Noto Sans';
+				font-style: italic;
+				font-weight: 400;
+				font-display: swap;
+				src: local('Noto Sans Italic'), local('NotoSans-Italic'),
+					url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital@1&display=swap')
+						format('woff2');
+			}
+
+			@font-face {
+				font-family: 'Noto Sans';
+				font-style: normal;
+				font-weight: 700;
+				font-display: swap;
+				src: local('Noto Sans Bold'), local('NotoSans-Bold'),
+					url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@700&display=swap')
+						format('woff2');
+			}
+
+			@font-face {
+				font-family: 'Noto Sans';
+				font-style: italic;
+				font-weight: 700;
+				font-display: swap;
+				src: local('Noto Sans Bold Italic'),
+					local('NotoSans-BoldItalic'),
+					url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@1,700&display=swap')
+						format('woff2');
+			}
+
 			* {
-				font-family: 'Noto Sans', Tahoma, Arial, sans-serif !important;
+				font-family: 'Noto Sans', 'Arial', 'Tahoma', 'system-ui',
+					'Segoe UI', 'Apple Color Emoji', 'Noto Color Emoji',
+					sans-serif;
 				line-height: 1.2em;
 				margin: 0;
 				padding: 0;
