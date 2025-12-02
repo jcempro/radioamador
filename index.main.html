@@ -14,113 +14,6 @@
 				content="0; url=https://jcem.pro/NOSCRIPT"
 			/>
 		</noscript>
-		<script>
-			(function (L, D) {
-				const WEB =
-					/^(?=.{1,253}$)(?!.*\.(local|lan|home|test|invalid)$)([a-zA-Z0-9-]{1,63}\.)+[A-Za-z]{2,}$/i;
-
-				const EL = (x, p = {}) =>
-					Object.assign(D.createElement(x), p);
-
-				const ADD = (x) => D.head.appendChild(x);
-
-				const comMain = (x) =>
-					x.replace(
-						/\.(c?js|css)/gi,
-						(_, ext) =>
-							`${!WEB.test(L.hostname) ? '.main' : ''}.${ext}`,
-					);
-
-				async function ___auto() {
-					// Canonical
-					const c = EL('link');
-					c.rel = 'canonical';
-					c.href = ((x) => {
-						return L.href
-							.replace(L.hostname, x)
-							.replace(/jcem\.pro:/, x);
-					})('jcem.pro');
-
-					ADD(c);
-
-					// Carregar arquivos e inserir conteúdo interno
-					for (const t of [
-						comMain('assets/css/index.css'),
-						comMain('assets/js/index.js'),
-					]) {
-						const tg = /\.c?js/i.test(t)
-							? 'script'
-							: /\.css/i.test(t)
-							? 'style'
-							: null;
-
-						if (!tg) continue;
-
-						await fetch(t)
-							.then((r) => r.text())
-							.then((code) => {
-								const el = EL(tg);
-								el.textContent = code;
-								ADD(el);
-							})
-							.catch((err) =>
-								console.error('Erro ao carregar:', t, err),
-							);
-					}
-				}
-
-				function ___Noto() {
-					const f = 'Noto Sans',
-						d = 'display:swap;',
-						s = 'src:local(',
-						e = ');',
-						u = 'https://fonts.gstatic.com/s/notosans/v28/';
-					const f2 = 'NotoSans';
-					const v = [
-						[
-							'',
-							400,
-							'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7du3mh',
-							`${f}`,
-							`${f}`,
-						],
-						[
-							'italic',
-							400,
-							'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7dunmh',
-							`${f} Italic`,
-							`${f}-Italic`,
-						],
-						[
-							'',
-							700,
-							'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5ar_dmD18Q',
-							`${f} Bold`,
-							`${f}-Bold`,
-						],
-						[
-							'italic',
-							700,
-							'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7dunmh',
-							`${f} Bold Italic`,
-							`${f}-BoldItalic`,
-						],
-					];
-					let c = '';
-					v.forEach((r) => {
-						c += `@font-face{font-family:'${f}';font-style:${
-							r[0]
-						};font-weight:${r[1]};${d}${s}'${r[3]}',local('${
-							r[4]
-						}'),url(${u + r[2]}.woff2)format('woff2')${e}}`;
-					});
-					ADD(EL('style', { textContent: c }));
-				}
-
-				___auto();
-				___Noto();
-			})(location, document);
-		</script>
 
 		<style>
 			:root {
@@ -190,4 +83,111 @@
 	<body>
 		<div class="lds"></div>
 	</body>
+
+	<script>
+		(function (L, D) {
+			const WEB =
+				/^(?=.{1,253}$)(?!.*\.(local|lan|home|test|invalid)$)([a-zA-Z0-9-]{1,63}\.)+[A-Za-z]{2,}$/i;
+
+			const EL = (x, p = {}) => Object.assign(D.createElement(x), p);
+
+			const ADD = (x) => D.head.appendChild(x);
+
+			const comMain = (x) =>
+				x.replace(
+					/\.(c?js|css)/gi,
+					(_, ext) =>
+						`${!WEB.test(L.hostname) ? '.main' : ''}.${ext}`,
+				);
+
+			async function ___auto() {
+				// Canonical
+				const c = EL('link');
+				c.rel = 'canonical';
+				c.href = ((x) => {
+					return L.href
+						.replace(L.hostname, x)
+						.replace(/jcem\.pro:/, x);
+				})('jcem.pro');
+
+				ADD(c);
+
+				// Carregar arquivos e inserir conteúdo interno
+				for (const t of [
+					comMain('assets/css/index.css'),
+					comMain('assets/js/index.js'),
+				]) {
+					const tg = /\.c?js/i.test(t)
+						? 'script'
+						: /\.css/i.test(t)
+						? 'style'
+						: null;
+
+					if (!tg) continue;
+
+					await fetch(t)
+						.then((r) => r.text())
+						.then((code) => {
+							const el = EL(tg);
+							el.textContent = code;
+							ADD(el);
+						})
+						.catch((err) =>
+							console.error('Erro ao carregar:', t, err),
+						);
+				}
+			}
+
+			function ___Noto() {
+				const f = 'Noto Sans',
+					d = 'display:swap;',
+					s = 'src:local(',
+					e = ');',
+					u = 'https://fonts.gstatic.com/s/notosans/v28/';
+				const f2 = 'NotoSans';
+				const v = [
+					[
+						'',
+						400,
+						'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7du3mh',
+						`${f}`,
+						`${f}`,
+					],
+					[
+						'italic',
+						400,
+						'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7dunmh',
+						`${f} Italic`,
+						`${f}-Italic`,
+					],
+					[
+						'',
+						700,
+						'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5ar_dmD18Q',
+						`${f} Bold`,
+						`${f}-Bold`,
+					],
+					[
+						'italic',
+						700,
+						'o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7dunmh',
+						`${f} Bold Italic`,
+						`${f}-BoldItalic`,
+					],
+				];
+				let c = '';
+				v.forEach((r) => {
+					c += `@font-face{font-family:'${f}';font-style:${
+						r[0]
+					};font-weight:${r[1]};${d}${s}'${r[3]}',local('${
+						r[4]
+					}'),url(${u + r[2]}.woff2)format('woff2')${e}}`;
+				});
+				ADD(EL('style', { textContent: c }));
+			}
+
+			___auto();
+			___Noto();
+		})(location, document);
+	</script>
 </html>
