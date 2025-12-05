@@ -23,9 +23,21 @@
 	"watch": {
 		"minify": {
 			"patterns": [
-				"**/*.main.html"
+				"**/*.main.html",
+				"**/*.main.css",
+				"**/*.main.scss",
+				"**/*.main.js",
+				"**/*.main.cjs",
+				"**/*.ts"
 			],
-			"extensions": "html",
+			"extensions": [
+				"html",
+				"css",
+				"scss",
+				"js",
+				"cjs",
+				"ts"
+			],
 			"quiet": false
 		},
 		"gerar-sumario": {}
