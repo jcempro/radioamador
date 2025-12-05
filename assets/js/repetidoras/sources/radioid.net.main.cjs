@@ -58,10 +58,9 @@ const converterTimeslot = (ts_linked) => {
 /**
  * Processa registro individual de repetidor
  * @param {Object} registro - Dados crus
- * @param {Object} contadorCidades - Contador para lidar com duplicatas
  * @returns {Promise<Object|null>} Registro processado ou null se inválido
  */
-async function processarRegistro(registro, contadorCidades) {
+async function processarRegistro(registro) {
 	const {
 		state,
 		country,
@@ -133,9 +132,6 @@ async function processarRegistro(registro, contadorCidades) {
 	}
 
 	// Gera location inicial [UF, cidade]
-	const chaveCidade = `${estadoSigla}:${cidadeProcessada}`;
-	contadorCidades[chaveCidade] =
-		(contadorCidades[chaveCidade] || 0) + 1;
 	novoReg.location = [estadoSigla.toUpperCase(), cidadeProcessada];
 
 	// Capitaliza campos string restantes
@@ -176,7 +172,6 @@ async function run(
 			throw new Error(`JSON inválido. Esperado objeto com '.rptrs'`);
 
 		const estados = {},
-			contadorCidades = {},
 			resultados = {
 				totalEstados: 0,
 				totalRegistros: 0,
@@ -187,10 +182,7 @@ async function run(
 			};
 
 		for (const registro of jsonData.rptrs) {
-			const processado = await processarRegistro(
-				registro,
-				contadorCidades,
-			);
+			const processado = await processarRegistro(registro);
 			if (processado) {
 				const { estadoSigla, registro: regProcessado } = processado;
 				if (!estados[estadoSigla]) estados[estadoSigla] = [];
@@ -202,22 +194,15 @@ async function run(
 
 		// Salva dados por estado
 		for (const [estadoSigla, registros] of Object.entries(estados)) {
-			const contadorPorCidade = {};
 			// Contagem por cidade
 			registros.forEach((r) => {
 				const cidade = r.location[1];
 				const chave = `${estadoSigla}:${cidade}`;
-				contadorPorCidade[chave] =
-					(contadorPorCidade[chave] || 0) + 1;
 			});
 			const contadorAtual = {};
 			registros.forEach((r) => {
 				const cidade = r.location[1];
 				const chave = `${estadoSigla}:${cidade}`;
-				if (contadorPorCidade[chave] > 1) {
-					contadorAtual[chave] = (contadorAtual[chave] || 0) + 1;
-					r.location.push(contadorAtual[chave]);
-				}
 			});
 			// Ordena por cidade
 			registros.sort((a, b) =>
@@ -270,5 +255,5 @@ if (typeof globalThis !== 'undefined') {
 	};
 
 	if (typeof window !== 'undefined')
-		window.radioidnet = globalThis.RPT_SOURCES;
+		window.RPT_SOURCES = globalThis.RPT_SOURCES;
 }

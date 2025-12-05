@@ -67,21 +67,22 @@ const RPT_PATH = ((x) =>
 const __JSON_BD = {};
 
 /**
- * @param {Object|string} registros
+ * @param {Object|Array} registros um registro (array) ou um conjunto de registros (vários elementos array)
  */
-
 function __counterCity(registros) {
 	function counter_func(rr) {
 		const contador = {};
 
+		// Primeira passada: contar ocorrências
 		for (const k in rr) {
 			const v = rr[k].location;
 			const kk = `${v[0].toLowerCase().trim()}:${v[1]
 				.toLowerCase()
 				.trim()}`;
-			contador[kk] = (contador[kk] ? contador[kk] : 0) + 1;
+			contador[kk] = (contador[kk] || 0) + 1;
 		}
 
+		// Segunda passada: adicionar números sequenciais
 		for (const k in rr) {
 			const v = rr[k].location;
 			const kk = `${v[0].toLowerCase().trim()}:${v[1]
@@ -93,15 +94,22 @@ function __counterCity(registros) {
 		return rr;
 	}
 
-	return Array.isArray(registros) &&
-		registros.hasOwnProperty('location')
-		? counter_func(registros)
-		: Object.fromEntries(
-				Object.entries(registros).map(([chave, valor]) => [
-					chave,
-					__counterCity(valor),
-				]),
-		  );
+	// Caso 1: Se for um array (verificação simples)
+	if (Array.isArray(registros)) {
+		return counter_func(registros);
+	}
+	// Caso 2: Se for um objeto (não array)
+	else if (registros && typeof registros === 'object') {
+		const resultado = {};
+		for (const chave in registros) {
+			if (registros.hasOwnProperty(chave)) {
+				resultado[chave] = __counterCity(registros[chave]);
+			}
+		}
+		return resultado;
+	}
+	// Caso 3: Qualquer outro tipo (não deveria acontecer)
+	return registros;
 }
 
 /**
@@ -120,6 +128,7 @@ async function salvarDadosTemporariamente(
 	formato = 'json',
 	cabecalhoCSV = null,
 ) {
+	// Se não for JSON ou se registros não for objeto, delega para salvarDados
 	if (
 		formato.trim().toLowerCase() !== 'json' ||
 		typeof registros !== 'object'
@@ -132,74 +141,169 @@ async function salvarDadosTemporariamente(
 			cabecalhoCSV,
 		);
 	}
+
 	estadoSigla = estadoSigla.trim().toLowerCase();
 	estadoSigla = estadoSigla === '' ? 'main' : estadoSigla;
 
-	__JSON_BD[path] = __JSON_BD[path] ? __JSON_BD[path] : {};
-	const ori = __JSON_BD[path][estadoSigla]
-		? __JSON_BD[path][estadoSigla]
-		: {};
+	// Extrai o path de forma eficiente
+	const path = resolverCaminho(caminhos, estadoSigla, '', formato);
 
-	__JSON_BD[path] = {
-		...__JSON_BD[path],
-		...{ estadoSigla: { ...ori, registros } },
-	};
+	// Inicializa estruturas de forma otimizada
+	if (!__JSON_BD) __JSON_BD = {};
+	if (!__JSON_BD[path]) __JSON_BD[path] = {};
+
+	// Se não existe registro para o estado, simplesmente atribui
+	if (!__JSON_BD[path][estadoSigla]) {
+		__JSON_BD[path][estadoSigla] = registros;
+	} else {
+		// Merge eficiente: registros substitui completamente os valores existentes
+		// Isso é mais eficiente que merge recursivo para o caso de uso
+		__JSON_BD[path][estadoSigla] = {
+			...__JSON_BD[path][estadoSigla],
+			...registros,
+		};
+	}
+
+	return Promise.resolve(path);
 }
 
 /**
- * Resolve caminhos de arquivos por basePath e estado
- * @param {string} basePath
- * @param {string} estadoSigla
- * @returns {Object} { json, base, estado }
- */
-function resolverCaminhos(basePath, estadoSigla = '', sufixo = '') {
-	const point = estadoSigla.trim() !== `` || commom.isFile(basePath);
-	basePath = basePath.replace(/^s*[\/\\]+/, '');
-	basePath = point
-		? commom.joinPath(basePath, `/uf/${estadoSigla}/`)
-		: basePath;
-
-	sufixo = sufixo.trim();
-
-	const nomeBase = commom
-		.joinPath(RPT_PATH, basePath)
-		.replace('.json', '');
-	return {
-		json: `${nomeBase}${point ? '' : '.'}${estadoSigla}${
-			sufixo !== '' ? '.' + sufixo : ''
-		}.json`,
-		base: nomeBase,
-		estado: estadoSigla,
-	};
-}
-
-/**
+ * Resolve caminhos de arquivos (função unificada)
+ * Agora com 3 modos distintos:
+ * 1. resolverCaminhos(basePath, estadoSigla, sufixo) -> retorna objeto com caminhos
+ * 2. caminhoFinal(caminhos, formato) -> retorna string com caminho formatado
+ * 3. resolverCaminhoCompleto(basePath, estadoSigla, formato, sufixo) -> retorna string completa
  *
- * @param {*} caminhos
- * @param {*} formato
- * @returns
+ * @param {string|Object} baseOuCaminho - Base path ou objeto de caminhos
+ * @param {string} estadoOuFormato - Estado sigla OU formato (para compatibilidade)
+ * @param {string} sufixoOuFormato - Sufixo ou formato (para compatibilidade)
+ * @param {string} formatoExplicito - Formato explícito (novo parâmetro opcional)
+ * @returns {Object|string} Objeto com caminhos ou string com caminho final
  */
-function __caminhoFinal(caminhos, formato) {
+function resolverCaminho(
+	baseOuCaminho,
+	estadoOuFormato = '',
+	sufixoOuFormato = '',
+	formatoExplicito = '',
+) {
+	console.log(`\n@@@@@@@ '${baseOuCaminho}'`);
+	let retorno = false;
+	const extname = (p) => {
+		if (!p || typeof p !== 'string') return '';
+		if (isNODE) return path.extname(p).toLowerCase();
+		const s = p.split(/[\/\\]/).pop();
+		const i = s.lastIndexOf('.');
+		return i > 0 ? s.slice(i).toLowerCase() : '';
+	};
+
+	const removerBarrasFinais = (p) =>
+		p ? p.replace(/[\/\\]+$/, '') : p;
+
+	const extEsperada = (fmt) => (fmt === 'csv' ? '.csv' : '.json');
+
+	const substituirUltimaExtensao = (p, novaExt) => {
+		const e = extname(p);
+		if (!e) return p + novaExt;
+		return p.slice(0, -e.length) + novaExt;
+	};
+
+	const inferirEhArquivo = (p) => {
+		const pNorm = removerBarrasFinais(p);
+		if (isNODE && commom && typeof commom.isFile === 'function') {
+			try {
+				if (commom.isFile(pNorm)) return true;
+			} catch (e) {}
+		}
+		return !!extname(pNorm);
+	};
+
 	const normalizarDestino = (base, fmt) => {
 		const baseTrim = removerBarrasFinais(base || '');
 		const esperado = extEsperada(fmt);
 		if (!baseTrim) return `dados${esperado}`;
 		const ehArquivo = inferirEhArquivo(baseTrim);
 		if (ehArquivo) {
-			const atual = extAtual(baseTrim);
+			const atual = extname(baseTrim);
 			if (!atual) return baseTrim + esperado;
 			if (atual !== esperado)
 				return substituirUltimaExtensao(baseTrim, esperado);
 			return baseTrim;
-		} else return path.join(baseTrim, `dados${esperado}`);
+		} else {
+			const separator = isNODE ? path.sep : '/';
+			return baseTrim + separator + `dados${esperado}`;
+		}
 	};
 
-	const destinoBase =
-		typeof caminhos === 'string'
-			? caminhos
-			: (caminhos && caminhos.json) || '';
+	// Verificar se temos formato explícito (parâmetro 4)
+	if (
+		formatoExplicito &&
+		['json', 'csv'].includes(formatoExplicito.toLowerCase().trim())
+	) {
+		// Modo 3: resolverCaminhoCompleto - com estado E formato explícitos
+		const basePath = baseOuCaminho;
+		const estadoSigla = (estadoOuFormato || '').trim().toLowerCase();
+		const sufixo = sufixoOuFormato || '';
+		const formato = formatoExplicito.toLowerCase().trim();
 
-	return normalizarDestino(destinoBase, formato);
+		const point = estadoSigla !== '' || commom.isFile(basePath);
+		let adjustedBasePath = (basePath || '').replace(/^s*[\/\\]+/, '');
+		adjustedBasePath =
+			point && estadoSigla !== ''
+				? commom.joinPath(adjustedBasePath, `/uf/${estadoSigla}/`)
+				: adjustedBasePath;
+
+		const nomeBase = commom
+			.joinPath(RPT_PATH, adjustedBasePath)
+			.replace(/\.json$/, '');
+
+		const caminhoJson = `${nomeBase}${
+			point && estadoSigla !== '' ? '' : '.'
+		}${estadoSigla}${sufixo ? '.' + sufixo : ''}.json`;
+
+		// Agora converte para o formato desejado
+		retorno = normalizarDestino(caminhoJson, formato);
+	}
+
+	// Modo 2: caminhoFinal - quando segundo parâmetro é 'json' ou 'csv'
+	if (
+		!retorno &&
+		estadoOuFormato &&
+		['json', 'csv'].includes(estadoOuFormato.toLowerCase().trim())
+	) {
+		const caminho = baseOuCaminho;
+		const formato = estadoOuFormato.toLowerCase().trim();
+		const destinoBase =
+			typeof caminho === 'string'
+				? caminho
+				: (caminho && caminho.json) || '';
+		retorno = normalizarDestino(destinoBase, formato);
+	}
+
+	if (!retorno) {
+		// Modo 1: resolverCaminhos (padrão)
+		const basePath = baseOuCaminho;
+		const estadoSigla = (estadoOuFormato || '')
+			.trim()
+			.toLocaleLowerCase();
+		const sufixo = sufixoOuFormato || '';
+		const point = estadoSigla !== '' || commom.isFile(basePath);
+		let adjustedBasePath = (basePath || '').replace(/^s*[\/\\]+/, '');
+		adjustedBasePath =
+			point && estadoSigla !== ''
+				? commom.joinPath(adjustedBasePath, `/uf/${estadoSigla}/`)
+				: adjustedBasePath;
+
+		const nomeBase = commom
+			.joinPath(RPT_PATH, adjustedBasePath)
+			.replace(/\.json$/, '');
+
+		retorno = `${nomeBase}${
+			point && estadoSigla !== '' ? '' : '.'
+		}${estadoSigla}${sufixo ? '.' + sufixo : ''}.json`;
+	}
+
+	console.log(`~~~~~~ '${retorno}'\n`);
+	return retorno;
 }
 
 /**
@@ -253,20 +357,6 @@ async function salvarDados(
 	if (!['json', 'csv'].includes(formato))
 		throw new Error(`Formato '${formato}' não suportado.`);
 
-	// ---------------------
-	// HELPERS INTERNOS
-	// ---------------------
-	const removerBarrasFinais = (p) =>
-		p ? p.replace(/[\/\\]+$/, '') : p;
-	const temExtensao = (p) => !!path.extname(p);
-	const extAtual = (p) => path.extname(p).toLowerCase() || '';
-	const extEsperada = (fmt) => (fmt === 'csv' ? '.csv' : '.json');
-	const substituirUltimaExtensao = (p, novaExt) => {
-		const e = path.extname(p);
-		if (!e) return p + novaExt;
-		return p.slice(0, -e.length) + novaExt;
-	};
-
 	// Converte array/obj JSON para CSV
 	const converterParaCSV = (dados, cabecalhoPersonalizado = null) => {
 		if (!Array.isArray(dados) || dados.length === 0) return '';
@@ -312,17 +402,6 @@ async function salvarDados(
 			linhas.push(linha.join(';'));
 		});
 		return linhas.join('\n');
-	};
-
-	// Detecta se path é arquivo
-	const inferirEhArquivo = (p) => {
-		const pNorm = removerBarrasFinais(p);
-		try {
-			if (commom && typeof commom.isFile === 'function')
-				if (commom.isFile(pNorm)) return true;
-		} catch (e) {}
-		if (temExtensao(pNorm)) return true;
-		return false;
 	};
 
 	const prepararConteudo = (
@@ -385,7 +464,11 @@ async function salvarDados(
 	// ---------------------
 	// FLUXO PRINCIPAL
 	// ---------------------
-	const caminhoFinal = __caminhoFinal(destinoBase, formato);
+	const caminhoFinal = resolverCaminho(
+		caminhos,
+		estadoSigla,
+		formato,
+	);
 
 	const conteudoParaSalvar = prepararConteudo(
 		registros,
@@ -396,19 +479,6 @@ async function salvarDados(
 		? gravarNode(caminhoFinal, conteudoParaSalvar)
 		: gravarBrowser(caminhoFinal, conteudoParaSalvar, formato);
 }
-
-const salvarCSV = (registros, caminhos, estadoSigla, formato) => {
-	salvarDados(registros, caminhos, estadoSigla, formato);
-	salvarDados(
-		csvMODELOS.rt4d.converterParaModelo(
-			registros,
-			csvMODELOS.rt4d.MODEL,
-		),
-		caminhos,
-		estadoSigla,
-		'csv',
-	);
-};
 
 // Execução específica por ambiente
 if (!isNODE) {
@@ -421,37 +491,34 @@ if (!isNODE) {
 		criarInterfaceNavegador();
 	}
 } else {
-	// Node.js: processa Radio ID e salva JSON + CSV
 	(async () => {
-		await SOURCES.radioid.run(
-			resolverCaminhos,
-			carregarDados,
-			salvarDadosTemporariamente,
-			(error, resultados) => {
-				if (!resultados)
-					throw new Error(
-						`\n[ERROR] resultados é inválido ou vazio.\n`,
-					);
+		[
+			[SOURCES.radioid, 'radioidnet', `${RPT_PATH}/radioid-net.csv`],
+			[SOURCES.labresp, 'labresp', `${RPT_PATH}/labre-sp.csv`],
+		].map(async (v) => {
+			const [runner, sufix, fpath] = v;
+			await runner.run(
+				(basePath, ufOrFormato = '') =>
+					resolverCaminho(basePath, ufOrFormato, sufix),
+				carregarDados,
+				salvarDadosTemporariamente,
+				(error, resultados) => {
+					if (!resultados)
+						throw new Error(
+							`\n[ERROR] resultados é inválido ou vazio.\n`,
+						);
 
-				salvarDados(
-					resultados.contents,
-					`${RPT_PATH}/radioidnet.csv`,
-				);
-			},
-		);
+					salvarDados(resultados.contents, fpath);
+				},
+			);
 
-		await SOURCES.labresp.run(
-			resolverCaminhos,
-			carregarDados,
-			salvarCSV,
-			(error, resultados) => {
-				if (!resultados)
-					throw new Error(
-						`\n[ERROR] resultados é inválido ou vazio.\n`,
-					);
+			for (const path in __JSON_BD) {
+				console.log(`####### '${path}'\n`);
+				salvarDados(__JSON_BD[path], path, '', 'json');
+				salvarDados(__JSON_BD[path], path, '', 'csv');
+			}
 
-				salvarDados(resultados.contents, `${RPT_PATH}/labre-sp.csv`);
-			},
-		);
+			return v;
+		});
 	})();
 }
