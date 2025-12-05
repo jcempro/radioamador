@@ -62,26 +62,144 @@ const RPT_PATH = ((x) =>
 );
 
 /**
+ *
+ */
+const __JSON_BD = {};
+
+/**
+ * @param {Object|string} registros
+ */
+
+function __counterCity(registros) {
+	function counter_func(rr) {
+		const contador = {};
+
+		for (const k in rr) {
+			const v = rr[k].location;
+			const kk = `${v[0].toLowerCase().trim()}:${v[1]
+				.toLowerCase()
+				.trim()}`;
+			contador[kk] = (contador[kk] ? contador[kk] : 0) + 1;
+		}
+
+		for (const k in rr) {
+			const v = rr[k].location;
+			const kk = `${v[0].toLowerCase().trim()}:${v[1]
+				.toLowerCase()
+				.trim()}`;
+			rr[k].location = [v[0], v[1], contador[kk]--];
+		}
+
+		return rr;
+	}
+
+	return Array.isArray(registros) &&
+		registros.hasOwnProperty('location')
+		? counter_func(registros)
+		: Object.fromEntries(
+				Object.entries(registros).map(([chave, valor]) => [
+					chave,
+					__counterCity(valor),
+				]),
+		  );
+}
+
+/**
+ * Salva dados processados em JSON ou CSV
+ * @param {Object|string} registros
+ * @param {Object|string} caminhos
+ * @param {string} estadoSigla
+ * @param {string} formato - 'json' ou 'csv'
+ * @param {Array<string>} cabecalhoCSV - Cabeçalho personalizado para CSV (opcional)
+ * @returns {Promise<string>} Caminho final
+ */
+async function salvarDadosTemporariamente(
+	registros,
+	caminhos,
+	estadoSigla = '',
+	formato = 'json',
+	cabecalhoCSV = null,
+) {
+	if (
+		formato.trim().toLowerCase() !== 'json' ||
+		typeof registros !== 'object'
+	) {
+		return salvarDados(
+			registros,
+			caminhos,
+			estadoSigla,
+			formato,
+			cabecalhoCSV,
+		);
+	}
+	estadoSigla = estadoSigla.trim().toLowerCase();
+	estadoSigla = estadoSigla === '' ? 'main' : estadoSigla;
+
+	__JSON_BD[path] = __JSON_BD[path] ? __JSON_BD[path] : {};
+	const ori = __JSON_BD[path][estadoSigla]
+		? __JSON_BD[path][estadoSigla]
+		: {};
+
+	__JSON_BD[path] = {
+		...__JSON_BD[path],
+		...{ estadoSigla: { ...ori, registros } },
+	};
+}
+
+/**
  * Resolve caminhos de arquivos por basePath e estado
  * @param {string} basePath
  * @param {string} estadoSigla
  * @returns {Object} { json, base, estado }
  */
-function resolverCaminhos(basePath, estadoSigla = '') {
+function resolverCaminhos(basePath, estadoSigla = '', sufixo = '') {
 	const point = estadoSigla.trim() !== `` || commom.isFile(basePath);
 	basePath = basePath.replace(/^s*[\/\\]+/, '');
 	basePath = point
 		? commom.joinPath(basePath, `/uf/${estadoSigla}/`)
 		: basePath;
 
+	sufixo = sufixo.trim();
+
 	const nomeBase = commom
 		.joinPath(RPT_PATH, basePath)
 		.replace('.json', '');
 	return {
-		json: `${nomeBase}${point ? '' : '.'}${estadoSigla}.json`,
+		json: `${nomeBase}${point ? '' : '.'}${estadoSigla}${
+			sufixo !== '' ? '.' + sufixo : ''
+		}.json`,
 		base: nomeBase,
 		estado: estadoSigla,
 	};
+}
+
+/**
+ *
+ * @param {*} caminhos
+ * @param {*} formato
+ * @returns
+ */
+function __caminhoFinal(caminhos, formato) {
+	const normalizarDestino = (base, fmt) => {
+		const baseTrim = removerBarrasFinais(base || '');
+		const esperado = extEsperada(fmt);
+		if (!baseTrim) return `dados${esperado}`;
+		const ehArquivo = inferirEhArquivo(baseTrim);
+		if (ehArquivo) {
+			const atual = extAtual(baseTrim);
+			if (!atual) return baseTrim + esperado;
+			if (atual !== esperado)
+				return substituirUltimaExtensao(baseTrim, esperado);
+			return baseTrim;
+		} else return path.join(baseTrim, `dados${esperado}`);
+	};
+
+	const destinoBase =
+		typeof caminhos === 'string'
+			? caminhos
+			: (caminhos && caminhos.json) || '';
+
+	return normalizarDestino(destinoBase, formato);
 }
 
 /**
@@ -134,11 +252,6 @@ async function salvarDados(
 		.toLowerCase();
 	if (!['json', 'csv'].includes(formato))
 		throw new Error(`Formato '${formato}' não suportado.`);
-
-	const destinoBase =
-		typeof caminhos === 'string'
-			? caminhos
-			: (caminhos && caminhos.json) || '';
 
 	// ---------------------
 	// HELPERS INTERNOS
@@ -212,20 +325,6 @@ async function salvarDados(
 		return false;
 	};
 
-	const normalizarDestino = (base, fmt) => {
-		const baseTrim = removerBarrasFinais(base || '');
-		const esperado = extEsperada(fmt);
-		if (!baseTrim) return `dados${esperado}`;
-		const ehArquivo = inferirEhArquivo(baseTrim);
-		if (ehArquivo) {
-			const atual = extAtual(baseTrim);
-			if (!atual) return baseTrim + esperado;
-			if (atual !== esperado)
-				return substituirUltimaExtensao(baseTrim, esperado);
-			return baseTrim;
-		} else return path.join(baseTrim, `dados${esperado}`);
-	};
-
 	const prepararConteudo = (
 		regs,
 		fmt,
@@ -248,13 +347,16 @@ async function salvarDados(
 			}
 			return txt;
 		}
-		if (Array.isArray(regs) || typeof regs === 'object')
+		if (Array.isArray(regs) || typeof regs === 'object') {
+			regs = __counterCity(regs);
+
 			return fmt === 'json'
 				? JSON.stringify(regs, null, 0)
 				: converterParaCSV(
 						Array.isArray(regs) ? regs : [regs],
 						cabecalhoPersonalizado,
 				  );
+		}
 		throw new Error("Tipo de 'registros' inválido.");
 	};
 
@@ -283,7 +385,8 @@ async function salvarDados(
 	// ---------------------
 	// FLUXO PRINCIPAL
 	// ---------------------
-	const caminhoFinal = normalizarDestino(destinoBase, formato);
+	const caminhoFinal = __caminhoFinal(destinoBase, formato);
+
 	const conteudoParaSalvar = prepararConteudo(
 		registros,
 		formato,
@@ -323,7 +426,7 @@ if (!isNODE) {
 		await SOURCES.radioid.run(
 			resolverCaminhos,
 			carregarDados,
-			salvarCSV,
+			salvarDadosTemporariamente,
 			(error, resultados) => {
 				if (!resultados)
 					throw new Error(
