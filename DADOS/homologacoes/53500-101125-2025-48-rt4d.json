@@ -9,9 +9,18 @@
 			"https://sei.anatel.gov.br/sei/modulos/pesquisa/md_pesq_processo_exibir.php?92AHliMZAlcgWWxm2w2qy-GDVz335h7FYd_mrGCDn9UEi2XStDTUZKOJ_damneHH9mwnSMIjw0l3j23hD04Tslu6zQPi-_oOunidHma2K0gz4NTxtOQtSLbb-4pSPYKr"
 		]
 	],
-	"r": [],
-	"dt": "",
-	"v": [],
+	"r": [
+		[
+			"18051/2025/ORCN/SOR",
+			"https://sei.anatel.gov.br/sei/modulos/pesquisa/md_pesq_documento_consulta_externa.php?8-74Kn1tDR89f1Q7RjX8EYU46IzCFD26Q9Xx5QNDbqZ1vaMjHpfJY_340p_feoDTeV3belK35iVydbI9w-sD7bjnqv_S5fhJYRGQOBhWWSgcNv1ZOm3mviUcB8f4Eh5i"
+		],
+		[
+			"PDF: Despacho 14956006",
+			"https://ide2lnk.github.io/DADOS/homologacoes/pdf/Despacho_Decisorio_14956006.pdf"
+		]
+	],
+	"dt": "07/01/2026",
+	"v": [14956006, "C1713714"],
 	"mc": "Radtel",
 	"md": "RT-4D",
 	"sn": "9251DMR06283",
@@ -19,5 +28,11 @@
 	"dp": "03/11/2025",
 	"tp": "${imp}",
 	"cid": "02",
-	"items": [["Rastreio", "NM960765703BR"]]
+	"items": [
+		["Rastreio", "NM960765703BR"],
+		[
+			"Assinador",
+			"Documento assinado eletronicamente por Secundino da Costa Lemos, Gerente de Certificação eNumeração, Substituto(a), em 07/01/2026, às 15:25, conforme horário oficial de Brasília, comfundamento no art. 23, inciso II, da Portaria nº 912/2017 da Anatel."
+		]
+	]
 }
