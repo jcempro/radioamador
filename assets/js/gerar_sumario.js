@@ -28,30 +28,45 @@ function gerarSumario() {
 			const caminho = path.join(constants.HOMOLOGACACOES, arquivo);
 			const conteudo = JSON.parse(fs.readFileSync(caminho, 'utf-8'));
 
-			const fname_or = path
-				.basename(arquivo, '.json')
-				.match(regex_start_fname)[0];
+			const basename = path.basename(arquivo, '.json');
 
-			const fname_pos = path
-				.basename(arquivo, '.json')
-				.replace(regex_start_fname, '@');
+			const fname_match = basename.match(regex_start_fname);
+
+			// FIX-BUG: evita crash em arquivos fora do padrão esperado
+			if (!fname_match) {
+				console.warn(
+					`⚠️ Arquivo ignorado por nome inválido: ${arquivo}`,
+				);
+				return null;
+			}
+
+			const fname_or = fname_match[0];
+
+			const fname_pos = basename.replace(regex_start_fname, '@');
+
+			const fname_real =
+				rNoWD(fname_or) === rNoWD(fname_pos) ? fname_pos : fname_or;
+
 			/**
 			 * id = string | [id, url] | (string | [id, url])[]
 			 * queremos obter um último id
 			 */
 			const novo_id = rNoWD(
-				Array.isArray(conteudo.id)
-					? (Array.isArray(conteudo.id[0])
-							? conteudo.id[conteudo.id.length - 1]
-							: conteudo.id)[0]
-					: conteudo.id,
+				Array.isArray(conteudo.id) ?
+					(Array.isArray(conteudo.id[0]) ?
+						conteudo.id[conteudo.id.length - 1]
+					:	conteudo.id)[0]
+				:	conteudo.id,
 			);
 
 			const cid = conteudo.cid;
-			const marca = conteudo.mc
-				? conteudo.mc.charAt(0).toUpperCase() +
-				  conteudo.mc.slice(1).toLowerCase()
-				: '';
+
+			const marca =
+				conteudo.mc ?
+					conteudo.mc.charAt(0).toUpperCase() +
+					conteudo.mc.slice(1).toLowerCase()
+				:	'';
+
 			const modelo = conteudo.md || '';
 
 			/**
@@ -63,19 +78,38 @@ function gerarSumario() {
 				Array.isArray(conteudo.id[0])
 			) {
 				for (const k in conteudo.id) {
-					const a_id = rNoWD(conteudo.id[k][0]);
-					ALL_IDs[a_id] =
-						rNoWD(fname_or) === a_id ? fname_pos : fname_or;
+					const raw_id = conteudo.id[k];
+
+					// FIX-BUG: ignora entradas inválidas sem quebrar geração
+					if (!Array.isArray(raw_id) || !raw_id[0]) {
+						continue;
+					}
+
+					const a_id = rNoWD(raw_id[0]);
+
+					// FIX-BUG: vincula todos aliases ao arquivo físico real
+					if (
+						a_id &&
+						(!Object.prototype.hasOwnProperty.call(ALL_IDs, a_id) ||
+							ALL_IDs[a_id] === fname_or)
+					) {
+						ALL_IDs[a_id] = fname_real;
+					}
 				}
-			} else
-				ALL_IDs[
-					rNoWD(
-						Array.isArray(conteudo.id) ? conteudo.id[0] : conteudo.id,
-					)
-				] = fname_pos;
+			} else {
+				const single_id = rNoWD(
+					Array.isArray(conteudo.id) ? conteudo.id[0] : conteudo.id,
+				);
+
+				// FIX-BUG: evita gravação de chave vazia/inválida
+				if (single_id) {
+					ALL_IDs[single_id] = fname_real;
+				}
+			}
 
 			return [novo_id, `${marca};${modelo}`, cid, fname_pos];
-		});
+		})
+		.filter(Boolean);
 
 	// Paginação: 25 itens por página
 	const porPagina = 25;
