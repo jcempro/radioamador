@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'DADOS/homologacoes/*.json'
+      - 'assets/js/gerar_sumario.json'
       - '.github/workflows/gerar-sumario.yml'
   workflow_dispatch:
 
