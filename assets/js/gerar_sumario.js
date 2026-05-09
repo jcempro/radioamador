@@ -20,11 +20,73 @@ function gerarSumario() {
 	const rNoWD = (x) => `${x}`.replace(/[^\w\d]/gi, ``);
 
 	const regex_start_fname =
-		/^(\d{5}[-\.]?\d{6}[-\.]?\d{4}[-\.]?\d{2}[-\.]?)/i;
+		/^(\d{5}[-\.,]?\d{6}[-\.,]?\d{4}[-\.,]?\d{2}[-\.,]?)/i;
+
+	const normalizeProcessPrefix = (filename) => {
+		const ext = path.extname(filename);
+
+		const basename = path.basename(filename, ext);
+
+		const match = basename.match(
+			/^(\d{5})[-\.,]?(\d{6})[-\.,]?(\d{4})[-\.,]?(\d{2})(.*)$/i,
+		);
+
+		// PROTECAO: mantém arquivos fora do padrão intactos
+		if (!match) {
+			return null;
+		}
+
+		const normalizedPrefix = `${match[1]}-${match[2]}-${match[3]}-${match[4]}`;
+
+		const suffix = match[5] || '';
+
+		const normalizedBasename = `${normalizedPrefix}${suffix}`;
+
+		// PROTECAO: evita renomeação redundante
+		if (normalizedBasename === basename) {
+			return null;
+		}
+
+		return `${normalizedBasename}${ext}`;
+	};
 
 	const resultado = arquivos
 		.filter((arquivo) => !/^sumario([\d]+|_)/i.test(arquivo))
-		.map((arquivo) => {
+		.map((arquivoOriginal) => {
+			let arquivo = arquivoOriginal;
+
+			const normalizedFilename =
+				normalizeProcessPrefix(arquivoOriginal);
+
+			if (normalizedFilename) {
+				const caminhoAtual = path.join(
+					constants.HOMOLOGACACOES,
+					arquivoOriginal,
+				);
+
+				const caminhoNormalizado = path.join(
+					constants.HOMOLOGACACOES,
+					normalizedFilename,
+				);
+
+				// FIX-BUG: evita sobrescrever arquivo já existente
+				if (
+					fs.existsSync(caminhoNormalizado) &&
+					caminhoAtual !== caminhoNormalizado
+				) {
+					console.warn(
+						`⚠️ Renomeação ignorada por colisão: ${arquivoOriginal} -> ${normalizedFilename}`,
+					);
+				} else {
+					fs.renameSync(caminhoAtual, caminhoNormalizado);
+
+					console.log(
+						`🛠️ Arquivo normalizado: ${arquivoOriginal} -> ${normalizedFilename}`,
+					);
+
+					arquivo = normalizedFilename;
+				}
+			}
 			const caminho = path.join(constants.HOMOLOGACACOES, arquivo);
 			const conteudo = JSON.parse(fs.readFileSync(caminho, 'utf-8'));
 
