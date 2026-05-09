@@ -1,3 +1,75 @@
+/**
+ * @file gerar_sumario.js
+ *
+ * @description
+ * Gera arquivos de sumário paginado e índice global de homologações
+ * a partir dos arquivos JSON existentes no diretório de homologações.
+ *
+ * @business_rules
+ *
+ * 1) Fonte de dados
+ *    - Todos os arquivos `.json` do diretório de homologações são processados.
+ *    - Arquivos `sumario*.json` existentes são ignorados como entrada.
+ *
+ * 2) Normalização preventiva de nomes de arquivos
+ *    - Prefixos de processo devem seguir o padrão:
+ *        00000-000000-0000-00
+ *    - O script normaliza automaticamente arquivos que utilizem:
+ *        - `.`
+ *        - `,`
+ *        - ausência de separador
+ *    - Exemplos válidos após normalização:
+ *        53500-108567-2025-15.json
+ *        53500-108567-2025-15-extra.json
+ *    - Arquivos fora do padrão mínimo esperado não são renomeados.
+ *    - Renomeações nunca sobrescrevem arquivos existentes.
+ *
+ * 3) Estrutura esperada do campo `id`
+ *    - Formatos aceitos:
+ *        string
+ *        [id, url]
+ *        [[id, url], ...]
+ *    - Quando múltiplos IDs existem, todos representam aliases equivalentes.
+ *
+ * 4) Regras de alias e vinculação
+ *    - Todos os aliases de `id` devem apontar para o mesmo arquivo físico.
+ *    - O índice global (`sumario_all.json`) sempre referencia
+ *      o arquivo real existente no diretório.
+ *    - IDs são normalizados removendo caracteres não alfanuméricos.
+ *
+ * 5) Geração do sumário
+ *    - Cada item do sumário contém:
+ *        [id_normalizado, "marca;modelo", cid, nome_arquivo]
+ *    - O último ID válido do array de aliases é utilizado
+ *      como ID principal do item.
+ *
+ * 6) Paginação
+ *    - O sumário é dividido em páginas de 25 itens.
+ *    - Arquivos gerados:
+ *        sumario0.json
+ *        sumario1.json
+ *        ...
+ *    - A última posição do array da página contém:
+ *        próximo índice de página
+ *        ou `-1` na última página.
+ *
+ * 7) Limpeza automática
+ *    - Arquivos de sumário excedentes são removidos automaticamente
+ *      quando a quantidade de páginas diminui.
+ *
+ * 8) Proteções obrigatórias
+ *    - Arquivos inválidos não interrompem a geração global.
+ *    - Estruturas inválidas de `id` são ignoradas parcialmente.
+ *    - Chaves vazias/inválidas não são persistidas.
+ *    - Colisões de renomeação são bloqueadas preventivamente.
+ *
+ * 9) Garantias operacionais
+ *    - O script nunca sobrescreve arquivos JSON de homologação.
+ *    - O índice global deve permanecer determinístico entre execuções.
+ *    - Todas as saídas devem ser regeneráveis exclusivamente
+ *      a partir do diretório de homologações.
+ */
+
 // radio/gerar_sumario.js
 import fs from 'fs';
 import path from 'path';
