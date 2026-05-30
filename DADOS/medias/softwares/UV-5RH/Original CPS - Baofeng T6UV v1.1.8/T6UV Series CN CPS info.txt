@@ -1,0 +1,28 @@
+T6UV Series CN CPS for the following:
+
+UV-17M / UV-17L
+UV-18M / UV-18L
+UV-19M / UV-19L
+UV-20M / UV-20L
+UV-21M / UV-21L
+UV-22M / UV-22L
+UV-25M / UV-25L
+UV-26M / UV-26L
+UV-27M / UV-27L
+UV-28M / UV-28L
+UV-1701M / UV-1701L
+UV-1702M / UV-1702L
+UV-1706M / UV-1706L
+UV-1802M / UV-1802L
+UV-1801M / UV-1801L
+
+
+The above product line has the following menus:
+
+M Version working frequency band：
+   AM 108-136; VHF 136-174/220-260; UHF 350-390/400-520MHz
+L Version working frequency band：
+   VHF 136-174/220-260; UHF 400-520MHz
+
+Suggested operation: choose to read the data of the walkie-talkie, 
+modify the frequency and subtone and then write the data
