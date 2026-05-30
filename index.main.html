@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 	<head>
 		<meta charset="UTF-8" />
@@ -29,9 +29,9 @@
 			}
 
 			* {
-				font-family: 'Noto Sans', 'Arial', 'Tahoma', 'system-ui',
-					'Segoe UI', 'Apple Color Emoji', 'Noto Color Emoji',
-					sans-serif;
+				font-family:
+					'Noto Sans', 'Arial', 'Tahoma', 'system-ui', 'Segoe UI',
+					'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
 				line-height: 1.2em;
 				margin: 0;
 				padding: 0;
@@ -115,12 +115,11 @@
 				// Carregar arquivos e inserir conteúdo interno
 				for (const t of [
 					comMain('assets/css/index.css'),
-					comMain('assets/js/index.js'),
+					comMain('assets/js/index.js?t=v2'),
 				]) {
-					const tg = /\.c?js/i.test(t)
-						? 'script'
-						: /\.css/i.test(t)
-						? 'style'
+					const tg =
+						/\.c?js/i.test(t) ? 'script'
+						: /\.css/i.test(t) ? 'style'
 						: null;
 
 					if (!tg) continue;
