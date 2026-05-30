@@ -12,7 +12,7 @@
 	"fccid": ["2AJGM-5RMINI", "https://fcc.report/FCC-ID/2AJGM-5RMINI"],
 	"dp": "08/05/2026",
 	"tp": "${imp}",
-	"cid": "04",
+	"cid": "J0",
 	"items": [
 		["Midias", [["Splash.psd", "/DADOS/medias/04/splash.psd"]]]
 	]
