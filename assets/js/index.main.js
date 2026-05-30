@@ -12,10 +12,9 @@ const isNODE =
  * - Em Node importa o módulo local 'common.main.cjs'
  * - Em browser utiliza globalThis/window.commom
  */
-const commom = isNODE
-	? require('common.main.cjs')
-	: typeof window !== `undefined`
-	? window.commom
+const commom =
+	isNODE ? require('common.main.cjs')
+	: typeof window !== `undefined` ? window.commom
 	: globalThis.commom;
 
 /**
@@ -96,11 +95,11 @@ const cachedFetch = async (url, options = {}, asJson = true) => {
 					const resp = await withTimeout(fetch(current, options));
 
 					if (resp.ok) {
-						const data = asJson
-							? await resp.json()
-							: asJson === false
-							? resp // retorna Response cru
-							: await resp.text();
+						const data =
+							asJson ? await resp.json()
+							: asJson === false ?
+								resp // retorna Response cru
+							:	await resp.text();
 
 						__fetchCache__.set(cacheKey, data);
 						return data;
@@ -240,15 +239,15 @@ function starthtml() {
 			.map(
 				(r) =>
 					`<li${r[3] === 'nl' ? ' class="nl"' : ''}>${r[0] || ''}${
-						r[1]
-							? `<a href="${r[1]}"${
-									r[1].startsWith('http') ? ' target="_blank"' : ''
-							  }>${r[2]}</a>`
-							: r[2] || ''
+						r[1] ?
+							`<a href="${r[1]}"${
+								r[1].startsWith('http') ? ' target="_blank"' : ''
+							}>${r[2]}</a>`
+						:	r[2] || ''
 					}${r[4] || ''}${
-						r[5]
-							? `<a href="${r[5]}" target="_blank">${r[6]}</a>`
-							: ''
+						r[5] ?
+							`<a href="${r[5]}" target="_blank">${r[6]}</a>`
+						:	''
 					}${r[7] || ''}</li>`,
 			)
 			.join('') +
@@ -268,9 +267,8 @@ function ___loadMain() {
 	getAllSumario();
 
 	const getCODIGO = (x, strict = true) => {
-		const pr = strict
-			? `${x}`
-			: `${x}`.split(`?t=`)[0].split(`.json`)[0];
+		const pr =
+			strict ? `${x}` : `${x}`.split(`?t=`)[0].split(`.json`)[0];
 
 		return `${pr}`
 			.split(`?`)
@@ -294,9 +292,8 @@ function ___loadMain() {
 			/*formata como 53500-077722-2025-44-uvk6 */
 			.replace(
 				/^(\d{5})(\d{6})(\d{4})(\d{2})([\w\d]+)?$/i,
-				'$1-$2-$3-$4$5'.replace('$5', (match) =>
-					match ? '-' + match : '',
-				),
+				(_, p1, p2, p3, p4, p5) =>
+					`${p1}-${p2}-${p3}-${p4}${p5 ? `-${p5}` : ``}`,
 			);
 
 	// ID principal a partir da URL (primeira parte)
@@ -451,7 +448,9 @@ function ___loadMain() {
 	 * @param {string} v
 	 * @returns {boolean}
 	 */
-	const isL = (v) => /^\s?(http|ftp)s?:\/\//.test(v);
+	const isL = (v) =>
+		typeof v === 'string' &&
+		(/^\s?(http|ftp)s?:\/\//.test(v) || /^\s?\//.test(v));
 
 	/**
 	 * MAKE_LINK: monta links a partir de várias formas de entrada:
@@ -468,16 +467,29 @@ function ___loadMain() {
 		if (!IS_ARR(y)) return ol ? 0 : y;
 		if (y.length === 0) return ``;
 		if (IS_STRING(y[0])) {
-			const pl = isL(y[0]) ? 0 : isL(y[1]) ? 1 : -1;
+			const pl =
+				isL(y[0]) ? 0
+				: isL(y[1]) ? 1
+				: -1;
+
+			// PROTECAO: formato inválido
+			if (pl < 0) {
+				return ol ? 0 : `${y[0]}`;
+			}
+
 			const l = `${y[pl]}`.trim();
+
 			if (ol) return l;
-			const t = y[pl === 0 ? 1 : 0];
+
+			const t = `${y[pl === 0 ? 1 : 0] ?? l}`;
+
 			return `<a href="${l}" target="_blank">${t}</a>`;
 		}
+
 		if (!IS_ARR(y[0])) return '';
-		return ol
-			? y.map((z) => MAKE_LINK(z, ol))
-			: '<ul>' +
+		return ol ?
+				y.map((z) => MAKE_LINK(z, ol))
+			:	'<ul>' +
 					y
 						.map((z) => MAKE_LINK(z, 0))
 						.map((n) => `<li>${n}</li>`)
@@ -569,11 +581,9 @@ function ___loadMain() {
 			row,
 			'div',
 			`dd`,
-			k === null
-				? 'Item mal formatado'
-				: v && v.trim().length > 0
-				? EnclouseTag(v)
-				: `---`,
+			k === null ? 'Item mal formatado'
+			: v && v.trim().length > 0 ? EnclouseTag(v)
+			: `---`,
 		);
 		LST.appendChild(row);
 	};
@@ -591,15 +601,16 @@ function ___loadMain() {
 			return ERR(...MSG3('S1'));
 		}
 
-		const dst = _('.dl table')
-			? _('.dl table')
-			: (() => {
+		const dst =
+			_('.dl table') ?
+				_('.dl table')
+			:	(() => {
 					_('.dl').insertAdjacentHTML(
 						'beforeend',
 						'<div class="tbl x"><table cellsspacing="0" border="0" cellpadding="0"></table></div>',
 					);
 					return _('.dl table');
-			  })();
+				})();
 
 		const add_row = (o, t = 0, max = 0) => {
 			const row = CREATE_EL(0, 'tr', '');
@@ -636,7 +647,7 @@ function ___loadMain() {
 
 		add_row(SUM_COLS, 1);
 
-		for (k = 0; k < d.length; k++) {
+		for (let k = 0; k < d.length; k++) {
 			const e = d[k];
 
 			if (k === d.length - 1 && isFinite(e) && !isNaN(e)) {
@@ -681,6 +692,11 @@ function ___loadMain() {
 					.replace(/[^\w\d]/gi, '')
 					.substring(0, 17);
 
+				// PROTECAO: chave inexistente no sumário
+				if (!HAS_KEY(all, kk) || typeof all[kk] !== 'string') {
+					return null;
+				}
+
 				chegouArroba = all[kk].indexOf(`@`) < 0;
 
 				if (chegouArroba) {
@@ -688,13 +704,13 @@ function ___loadMain() {
 					continue;
 				}
 
-				rr = HAS_KEY(all, kk)
-					? treate_cid(all[kk].replace(`@`, formatarCID(kk)))
-					: null;
+				rr = treate_cid(all[kk].replace(`@`, formatarCID(kk)));
 			} while (chegouArroba && ++loopcount <= 3);
 
 			return rr;
 		};
+
+		console.warn(`Acessando '${fURL}...'`);
 
 		cachedFetch([fURL, retryUrls, retryUrls, retryUrls])
 			.then((data) => {
@@ -732,24 +748,26 @@ function ___loadMain() {
 					const idx =
 						CODIGO.length > 2 ? parseInt(`${CODIGO[2]}`) : 0;
 					const rr = MAKE_LINK(
-						!isNaN(idx) &&
-							idx < data[CED].length &&
-							IS_ARR(data[CED][idx])
-							? data[CED][idx]
-							: data[CED],
+						(
+							!isNaN(idx) &&
+								idx < data[CED].length &&
+								IS_ARR(data[CED][idx])
+						) ?
+							data[CED][idx]
+						:	data[CED],
 						1,
 					);
-					return rr
-						? (() => {
+					return rr ?
+							(() => {
 								TITULO('Redirecionando...');
 								window.location = rr;
-						  })()
-						: ERR(
+							})()
+						:	ERR(
 								`D3`,
 								`Destino "${CED}" inválido`,
 								`Variável de destino não é uma URL válida ou existente.${PROPS_MSG}`,
 								1,
-						  );
+							);
 				} else {
 					// Exibição detalhada do registro
 					TITULO(`<small>${CST(data.mc)}</small> ${data.md}`);
@@ -775,8 +793,14 @@ function ___loadMain() {
 						],
 					]) {
 						const val = IS_ARR(j) ? j : [PROPS[j] || null, data[j]];
+
+						// PROTECAO: item personalizado deve possuir [titulo, valor]
+						if (IS_ARR(j) && j.length !== 2) {
+							return ERR(...MSG1(`ITM3`));
+						}
+
 						ADD(RP(val[0]), PRE_FORMAT(val[1], j));
-						if (!val[0]) return ERR(MSG1(`ITM2`));
+						if (!val[0]) return ERR(...MSG1(`ITM2`));
 					}
 					LOADED();
 				}

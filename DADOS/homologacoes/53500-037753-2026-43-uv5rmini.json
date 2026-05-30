@@ -13,5 +13,7 @@
 	"dp": "08/05/2026",
 	"tp": "${imp}",
 	"cid": "04",
-	"items": []
+	"items": [
+		["Midias", [["Splash.psd", "/DADOS/medias/04/splash.psd"]]]
+	]
 }
